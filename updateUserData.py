@@ -1,4 +1,6 @@
 #!/bin/python3
+import random
+
 import requests
 import calendar
 import time
@@ -16,6 +18,9 @@ import time
 
 
 # class having some variables used to update the user data
+from matplotlib import pyplot as plt
+
+
 class UpdateData:
     pilotName = ""
     pilotId = 0
@@ -28,6 +33,11 @@ class UpdateData:
     # dataUptoTimestamp will be by default current day timestamp.
     dataUptoTimestamp=calendar.timegm(time.gmtime())
     dataFormat = {}
+    # stores raw and invoice data in dictionary data structures where key=time and value=raw data/invoive data
+    rawData={}
+    InvoiceData={}
+    # gap between consecutive raw data points which is defaults to 900 seconds=15 minutes
+    gapInRawData=900
 
     def __init__(self,pilotName,pilotId,dataServerURL,uuid,hid,gid,accessToken,DataUptoTimestamp):
         print("inside constructor...")
@@ -81,11 +91,53 @@ class UpdateData:
 
     # todo => function to get the RAW/INVOICE file format
 
-    # todo => function to generate the RAW/INVOICE data as required
+    # function to generate the RAW data as required
+
+    def generateRawData(self):
+        From=self.lastDataTimestamp
+        To=self.dataUptoTimestamp
+        gap=self.gapInRawData
+        for time in range(From,To+1,gap):
+            self.rawData[time]=round(random.uniform(0, 3),2)
+        print("raw data points for user from:",From," to:",To,"is:")
+        print(self.rawData)
+        print("raw data generation for the user completed!")
+
+
+    # todo => function to generate the INVOICE data as required
+
+    def generateInvoiceData(self):
+
+        return "done"
+
+    def generateRawDataVisuals(self):
+
+        # plot to show raw data points on 15 mintutes interval
+        data=self.rawData
+        y = []
+        x = sorted(data)
+        for time in x:
+            y.append(data[time])
+        plt.plot(x, y)
+        # naming the x axis
+        plt.xlabel('timestamp')
+        # naming the y axis
+        plt.ylabel('raw data point')
+        # giving a title to the graph
+        plt.title('raw data plot')
+        # show a legend on the plot
+        plt.legend()
+        # function to show the plot
+        plt.show()
+
+        # plot to show raw data points on day basis
+
+
+
+
+    # todo => function to provide the visuals for the invoice data generated
 
     # todo => function to generate the RAW/INVOICE data file as required
-
-    # todo => function to provide the visuals for the data generated
 
     # todo => function to upload the files to s3 if required
 
