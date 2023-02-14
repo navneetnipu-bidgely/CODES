@@ -7,28 +7,6 @@ from xlwt import Workbook
 import pytz
 
 # needed constant user input variables
-# data server url:https://naapi.bidgely.com
-# access token:67bb9c1d-3166-43eb-9cf1-c694926e5607
-# thread number:10
-# chunk size: 100
-# timezone:America/New_York
-# mode:month
-# hid:1
-# t0:1662004800
-# t1:1664596500
-# locale:en_US
-# app id list:[18,4] like that
-# syrvey question list like ["Q1","Q2",etc]
-# measurementType
-# tou user list txt file path
-# nontou user list txt file path
-# appliance name mapping
-# ratePlanId to tou or tier name mapping
-# rate plan mapping
-# last_completed_calender_start_timestamp
-# last_completed_calender_end_timestamp
-# current_completed_calender_start_timestamp
-# current_completed_calender_end_timestamp
 
 # Data server url for pseg (prod-na)
 DATA_SERVER_URL = "https://naapi.bidgely.com"
@@ -48,6 +26,8 @@ NON_TOU_CHUNK_SIZE = 2
 
 # time zone of pilot
 TIMEZONE = "America/New_York"
+
+# time zone conversion
 NY_TZ = pytz.timezone('America/New_York')
 
 # mode of data to be fetched (can be day,month year etc.)
@@ -618,6 +598,7 @@ def thread_target_function(uuid_list, start, end):
         print("user survey data fetch completed for user:", uuid)
         get_billing_data_info(uuid=uuid, PlanNumber=JSON_REPORT[uuid]["PlanNumber"])
         print("user billing data fetch completed for user:", uuid)
+        print("copmplete data fetched for user:", uuid, " is:\n", JSON_REPORT[uuid])
         print("thread_target_function for user:", uuid, " done")
 
 
