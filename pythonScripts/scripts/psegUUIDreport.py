@@ -1,3 +1,5 @@
+# please get these packages installed before executing this program.
+
 import json
 import math
 import threading
@@ -6,7 +8,7 @@ import datetime
 from xlwt import Workbook
 import pytz
 
-# Below are the needed user input variables
+# Below are the required user input variables
 
 # Data server url for pseg (prod-na)
 DATA_SERVER_URL = "https://naapi.bidgely.com"
@@ -15,6 +17,7 @@ DATA_SERVER_URL = "https://naapi.bidgely.com"
 ACCESS_TOKEN = "40619138-b78f-4851-98ca-588b61fd3bcf"
 
 # Putting payload parameters required for API call
+# can be edited if needed to add any other api parameters
 PARAMS = {"access_token": ACCESS_TOKEN}
 
 # limiting number of threads to restrict any cpu overloading
@@ -68,6 +71,12 @@ RATE_PLAN_TO_CATEGORY_MAPPING = {190: "tou", 191: "tou", 192: "tou", 193: "tou",
 
 # rate plan mapping
 RATE_PLAN_MAPPING = {1: 180, 10: 580, 37: 190, 41: 191, 42: 192, 34: 193}
+
+# cTypes programId
+TIER_PROGRAM_ID = "0fa90f13-2ec8-4768-b1b1-a764d57955c9"
+TOU_PROGRAM_ID = "63302766-1cc4-43dd-9bd9-70ed72b2ddf5"
+# rate category to proramID mapping(for internal use)
+FIND_PROGRAM_ID_FROM_RATE_CATEGORY = {"tou": TOU_PROGRAM_ID, "tier": TIER_PROGRAM_ID}
 
 # last 2 completed calander months start and end timestamps (december 2022 and january 2023)
 LAST_COMPLETED_CALENDER_START_TIMESTAMP = 1669870800
@@ -261,92 +270,94 @@ def get_billing_data_info(uuid, PlanNumber):
     JSON_REPORT[uuid]["TotalAggregatedEVCostInLastCalendarMonth"] = ""
 
     '''
-        # fetch billing_cost aggregated cost and tier and tou aggregated consumption for calender months(current and last)
         # check if user has trasitioned rates or not
         # if transitioned, whether it is from same type(tier rate1=>tier rate2 like that) or cross type(tier=>tou or tou=>tier)
         # if user is transitioned rates then call api with mode=day and t0 and t1 should be previous and current rate slab timestamps
-        # take the aggregated cost and consumption
+        # take the aggregated cost and consumption from respective api 
         ## for pseg for now, if rateSchedule is null we cant find rate transitioned user
     '''
 
-    # finding aggregated cost for last and current calender months
-
-    api_data_billingCost_CurrentMonth_json = api_call(
-        api=AGGREGATED_COST_API.format(uuid=uuid, appId=APPLIANCE_ID_LIST[0], cType="billing_cost",
-                                       planNumber=PlanNumber, t0=CURRENT_COMPLETED_CALENDER_START_TIMESTAMP,
-                                       t1=CURRENT_COMPLETED_CALENDER_END_TIMESTAMP, mode="month"), method='GET',
-        params=PARAMS, data="")
-    api_data_billingCost_LastMonth_json = api_call(
-        api=AGGREGATED_COST_API.format(uuid=uuid, appId=APPLIANCE_ID_LIST[0], cType="billing_cost",
-                                       planNumber=PlanNumber, t0=LAST_COMPLETED_CALENDER_START_TIMESTAMP,
-                                       t1=LAST_COMPLETED_CALENDER_END_TIMESTAMP, mode="month"), method='GET',
-        params=PARAMS, data="")
-
-    # initializing the cost to 0
+    # initializing the cost variables to 0
     current_month_billing_cost = 0
     last_month_billing_cost = 0
 
-    # calculating aggregated billing cost for current month
-    for timestamp in api_data_billingCost_CurrentMonth_json:
-        current_month_billing_cost += api_data_billingCost_CurrentMonth_json[timestamp]["cost"]
-
-    # calculating aggregated billing cost for last month
-    for timestamp in api_data_billingCost_LastMonth_json:
-        last_month_billing_cost += api_data_billingCost_LastMonth_json[timestamp]["cost"]
-
-    # populating cost data to JSON_RESPORT for particular uuid
-    if current_month_billing_cost != 0:
-        JSON_REPORT[uuid]["TotalAggregatedEVCostInCurrentCalendarMonth"] = current_month_billing_cost
-    else:
-        JSON_REPORT[uuid]["TotalAggregatedEVCostInCurrentCalendarMonth"] = ""
-
-    if last_month_billing_cost != 0:
-        JSON_REPORT[uuid]["TotalAggregatedEVCostInLastCalendarMonth"] = last_month_billing_cost
-    else:
-        JSON_REPORT[uuid]["TotalAggregatedEVCostInLastCalendarMonth"] = ""
-
-    # finding aggregated consumption for last and current calender months
-
-    # initializing the cost to 0
-    current_month_billing_consumption = 0
-    last_month_billing_consumption = 0
+    # initializing the consumption variables to 0
+    current_month_aggregated_consumption = 0
+    last_month_aggregated_consumption = 0
 
     if JSON_REPORT[uuid]["RatePlanSchedule"] == {} or len(JSON_REPORT[uuid]["RatePlanSchedule"]) == 1:
         '''
             # no need to find rate transitions data
             # first find the rate category of user through ratePlanId and RATE_TO_CATEGORY_MAPPING
-            # Then call the respective aggregatedCost api
-            # Then add the total consumptions for all timestamps
+            # Then call the respective aggregated Cost and consumption APIs
+            # Then add the total consumptions for all timestamps to find the aggregated consumtion
+            # same for cost to find the aggregated cost
         '''
 
         rate_category = RATE_PLAN_TO_CATEGORY_MAPPING[int(JSON_REPORT[uuid]["RatePlanID"])]
+        PlanNumber = JSON_REPORT[uuid]["PlanNumber"]
 
         # for current completed month
+
+        # adding program_id to api parameter locally
+        params = PARAMS
+        params["programId"] = FIND_PROGRAM_ID_FROM_RATE_CATEGORY[rate_category]
+
+        # finding aggreagted cost
+
+        api_data_billingCost_CurrentMonth_json = api_call(
+            api=AGGREGATED_COST_API.format(uuid=uuid, appId=APPLIANCE_ID_LIST[0], cType="billing_cost",
+                                           planNumber=PlanNumber, t0=CURRENT_COMPLETED_CALENDER_START_TIMESTAMP,
+                                           t1=CURRENT_COMPLETED_CALENDER_END_TIMESTAMP, mode="month"), method='GET',
+            params=params, data="")
+
+        # calculating aggregated billing cost for current month
+        for timestamp in api_data_billingCost_CurrentMonth_json:
+            current_month_billing_cost += api_data_billingCost_CurrentMonth_json[timestamp]["cost"]
+
+        # finding aggregated consumption
 
         api_data_tou_consumption_currentMonth_json = api_call(
             api=AGGREGATED_COST_API.format(uuid=uuid, appId=APPLIANCE_ID_LIST[0], cType=rate_category,
                                            planNumber=PlanNumber, t0=CURRENT_COMPLETED_CALENDER_START_TIMESTAMP,
                                            t1=CURRENT_COMPLETED_CALENDER_END_TIMESTAMP, mode="month"), method='GET',
-            params=PARAMS, data="")
+            params=params, data="")
 
+        # calculating aggregated consumption for current month
         for timestamp in api_data_tou_consumption_currentMonth_json:
             data = api_data_tou_consumption_currentMonth_json[timestamp][rate_category + "AggData"][
                 rate_category + "RrcMap"]
             for category in data:
-                current_month_billing_consumption += data[category]["tierCons"]
+                current_month_aggregated_consumption += data[category]["tierCons"]
 
         # for last completed month
-        api_data_tou_consumption_LastMonth_json = api_call(
-            api=AGGREGATED_COST_API.format(uuid=uuid, appId=APPLIANCE_ID_LIST[0], cType="tou", planNumber=PlanNumber,
-                                           t0=LAST_COMPLETED_CALENDER_START_TIMESTAMP,
-                                           t1=LAST_COMPLETED_CALENDER_END_TIMESTAMP, mode="month"), method='GET',
-            params=PARAMS, data="")
 
+        # finding aggregated cost
+
+        api_data_billingCost_LastMonth_json = api_call(
+            api=AGGREGATED_COST_API.format(uuid=uuid, appId=APPLIANCE_ID_LIST[0], cType="billing_cost",
+                                           planNumber=PlanNumber, t0=LAST_COMPLETED_CALENDER_START_TIMESTAMP,
+                                           t1=LAST_COMPLETED_CALENDER_END_TIMESTAMP, mode="month"), method='GET',
+            params=params, data="")
+
+        # calculating aggregated billing cost for last month
+        for timestamp in api_data_billingCost_LastMonth_json:
+            last_month_billing_cost += api_data_billingCost_LastMonth_json[timestamp]["cost"]
+
+        # finding aggreagted consumtion
+
+        api_data_tou_consumption_LastMonth_json = api_call(
+            api=AGGREGATED_COST_API.format(uuid=uuid, appId=APPLIANCE_ID_LIST[0], cType=rate_category,
+                                           planNumber=PlanNumber, t0=LAST_COMPLETED_CALENDER_START_TIMESTAMP,
+                                           t1=LAST_COMPLETED_CALENDER_END_TIMESTAMP, mode="month"), method='GET',
+            params=params, data="")
+
+        # calculating aggregated consumption for last month
         for timestamp in api_data_tou_consumption_LastMonth_json:
             data = api_data_tou_consumption_LastMonth_json[timestamp][rate_category + "AggData"][
                 rate_category + "RrcMap"]
             for category in data:
-                last_month_billing_consumption += data[category]["tierCons"]
+                last_month_aggregated_consumption += data[category]["tierCons"]
 
 
 
@@ -359,91 +370,185 @@ def get_billing_data_info(uuid, PlanNumber):
             # then fetch the api data using proper parameters
         '''
 
+        params = PARAMS
+
         # getting user details api response using USER_DETAILS_API in json format and extracting required rateSchedule json part from it
         api_data = api_call(api=USER_DETAILS_API.format(uuid=uuid), method='GET', params=PARAMS, data="")["payload"][
             "homeAccounts"]
         rates_schedule = json.loads(api_data["ratesSchedule"])
 
         # finding the required data from rates_schedule to call the billing api
+
+        # finding old rates data
         rates_schedule_len = len(rates_schedule)
         old_rate_plan_number = int(rates_schedule[rates_schedule_len - 2]["metaData"]["planNumber"])
         old_rate_category = RATE_PLAN_TO_CATEGORY_MAPPING[RATE_PLAN_MAPPING[old_rate_plan_number]]
+
+        # finding new rates data
         new_rate_plan_number = int(rates_schedule[rates_schedule_len - 1]["metaData"]["planNumber"])
         new_rate_category = RATE_PLAN_TO_CATEGORY_MAPPING[RATE_PLAN_MAPPING[new_rate_plan_number]]
         rate_effective_timestamp = rates_schedule[rates_schedule_len - 1]["endTime"]
 
+        # finding the rate time slab from rate_effective_timestamp
         start_end_timestamp_slab = get_start_end_timeslab_for_rate_transition(rate_effective_timestamp)
 
-        # calculate the aggregated consumption  for different time slabs and different rate category
+        # calculate the aggregated consumption and cost for different time slabs and different rate category
 
-        # calculating aggregated consumption for current completed month time slabs
-        # current_month_billing_consumption
+        # calculating aggregated cost and consumption for current completed month time slabs
+
+        # current_month_billing_cost
+        # current_month_aggregated_consumption
         for time_slab in start_end_timestamp_slab["current_month"]:
 
+            params = PARAMS
+
             if time_slab["new_rate_plan_applied"] == True:
+
+                # adding program_id to api parameter locally using rate_category
+                params["programId"] = FIND_PROGRAM_ID_FROM_RATE_CATEGORY[new_rate_category]
+
+                # finding aggregated cost
+                api_data_billingCost_CurrentMonth_json = api_call(
+                    api=AGGREGATED_COST_API.format(uuid=uuid, appId=APPLIANCE_ID_LIST[0], cType="billing_cost",
+                                                   planNumber=new_rate_plan_number, t0=time_slab["start"],
+                                                   t1=time_slab["end"], mode=time_slab["mode"]), method='GET',
+                    params=params, data="")
+
+                # calculating aggregated billing cost for current month
+                for timestamp in api_data_billingCost_CurrentMonth_json:
+                    current_month_billing_cost += api_data_billingCost_CurrentMonth_json[timestamp]["cost"]
+
+                # finding aggregated consumption
                 api_data_tou_consumption_currentMonth_json = api_call(
                     api=AGGREGATED_COST_API.format(uuid=uuid, appId=APPLIANCE_ID_LIST[0], cType=new_rate_category,
                                                    planNumber=new_rate_plan_number, t0=time_slab["start"],
                                                    t1=time_slab["end"], mode=time_slab["mode"]), method='GET',
-                    params=PARAMS, data="")
+                    params=params, data="")
 
                 for timestamp in api_data_tou_consumption_currentMonth_json:
                     data = api_data_tou_consumption_currentMonth_json[timestamp][new_rate_category + "AggData"][
                         new_rate_category + "RrcMap"]
                     for category in data:
-                        current_month_billing_consumption += data[category]["tierCons"]
+                        current_month_aggregated_consumption += data[category]["tierCons"]
 
             else:
+                # adding program_id to api parameter locally using rate_category
+                params["programId"] = FIND_PROGRAM_ID_FROM_RATE_CATEGORY[old_rate_category]
+
+                # finding aggregated cost
+                api_data_billingCost_CurrentMonth_json = api_call(
+                    api=AGGREGATED_COST_API.format(uuid=uuid, appId=APPLIANCE_ID_LIST[0], cType="billing_cost",
+                                                   planNumber=old_rate_category, t0=time_slab["start"],
+                                                   t1=time_slab["end"], mode=time_slab["mode"]), method='GET',
+                    params=params, data="")
+
+                # calculating aggregated billing cost for current month
+                for timestamp in api_data_billingCost_CurrentMonth_json:
+                    current_month_billing_cost += api_data_billingCost_CurrentMonth_json[timestamp]["cost"]
+
+                # finding aggregated consumption
                 api_data_tou_consumption_currentMonth_json = api_call(
                     api=AGGREGATED_COST_API.format(uuid=uuid, appId=APPLIANCE_ID_LIST[0], cType=old_rate_category,
                                                    planNumber=old_rate_plan_number, t0=time_slab["start"],
                                                    t1=time_slab["end"], mode=time_slab["mode"]), method='GET',
-                    params=PARAMS, data="")
+                    params=params, data="")
 
+                # calculating aggregated consumption for last completed month
                 for timestamp in api_data_tou_consumption_currentMonth_json:
                     data = api_data_tou_consumption_currentMonth_json[timestamp][old_rate_category + "AggData"][
                         old_rate_category + "RrcMap"]
                     for category in data:
-                        current_month_billing_consumption += data[category]["tierCons"]
+                        current_month_aggregated_consumption += data[category]["tierCons"]
 
-        # calculating aggregated consumption for last completed month time slabs
-        # last_month_billing_consumption
+        # calculating aggregated cost and consumption for last completed month time slabs
+
+        # last_month_billing_cost
+        # last_month_aggregated_consumption
         for time_slab in start_end_timestamp_slab["last_month"]:
+
+            params = PARAMS
+
             if time_slab["new_rate_plan_applied"] == True:
+                # adding program_id to api parameter locally using rate_category
+                params["programId"] = FIND_PROGRAM_ID_FROM_RATE_CATEGORY[new_rate_category]
+
+                # finding aggregated cost
+
+                api_data_billingCost_LastMonth_json = api_call(
+                    api=AGGREGATED_COST_API.format(uuid=uuid, appId=APPLIANCE_ID_LIST[0], cType="billing_cost",
+                                                   planNumber=new_rate_plan_number, t0=time_slab["start"],
+                                                   t1=time_slab["end"], mode=time_slab["mode"]), method='GET',
+                    params=params, data="")
+
+                # calculating aggregated billing cost for last month
+                for timestamp in api_data_billingCost_LastMonth_json:
+                    last_month_billing_cost += api_data_billingCost_LastMonth_json[timestamp]["cost"]
+
+                # finding aggregated consumption
                 api_data_tou_consumption_lastMonth_json = api_call(
                     api=AGGREGATED_COST_API.format(uuid=uuid, appId=APPLIANCE_ID_LIST[0], cType=new_rate_category,
                                                    planNumber=new_rate_plan_number, t0=time_slab["start"],
                                                    t1=time_slab["end"], mode=time_slab["mode"]), method='GET',
-                    params=PARAMS, data="")
+                    params=params, data="")
 
+                # calculating aggregated consumption for last completed month
                 for timestamp in api_data_tou_consumption_lastMonth_json:
                     data = api_data_tou_consumption_lastMonth_json[timestamp][new_rate_category + "AggData"][
                         new_rate_category + "RrcMap"]
                     for category in data:
-                        current_month_billing_consumption += data[category]["tierCons"]
+                        last_month_aggregated_consumption += data[category]["tierCons"]
 
             else:
+                # adding program_id to api parameter locally using rate_category
+                params["programId"] = FIND_PROGRAM_ID_FROM_RATE_CATEGORY[old_rate_category]
+
+                # finding aggregated cost
+
+                api_data_billingCost_LastMonth_json = api_call(
+                    api=AGGREGATED_COST_API.format(uuid=uuid, appId=APPLIANCE_ID_LIST[0], cType="billing_cost",
+                                                   planNumber=old_rate_plan_number, t0=time_slab["start"],
+                                                   t1=time_slab["end"], mode=time_slab["mode"]), method='GET',
+                    params=params, data="")
+
+                # calculating aggregated billing cost for last month
+                for timestamp in api_data_billingCost_LastMonth_json:
+                    last_month_billing_cost += api_data_billingCost_LastMonth_json[timestamp]["cost"]
+
+                # finding aggregated cost
                 api_data_tou_consumption_lastMonth_json = api_call(
                     api=AGGREGATED_COST_API.format(uuid=uuid, appId=APPLIANCE_ID_LIST[0], cType=old_rate_category,
                                                    planNumber=old_rate_plan_number, t0=time_slab["start"],
                                                    t1=time_slab["end"], mode=time_slab["mode"]), method='GET',
-                    params=PARAMS, data="")
+                    params=params, data="")
 
+                # calculating aggregated consumption for last month
                 for timestamp in api_data_tou_consumption_lastMonth_json:
                     data = api_data_tou_consumption_lastMonth_json[timestamp][old_rate_category + "AggData"][
                         old_rate_category + "RrcMap"]
                     for category in data:
-                        current_month_billing_consumption += data[category]["tierCons"]
+                        last_month_aggregated_consumption += data[category]["tierCons"]
 
-    # populating in consumption data JSON_REPORT
+    # populating aggregated cost data to JSON_RESPORT for particular uuid
 
-    if current_month_billing_consumption != 0:
-        JSON_REPORT[uuid]["TotalAggregatedEVConsumptionInCurrentCalendarMonth"] = current_month_billing_consumption
+    if current_month_billing_cost != 0:
+        JSON_REPORT[uuid]["TotalAggregatedEVCostInCurrentCalendarMonth"] = current_month_billing_cost
+    else:
+        JSON_REPORT[uuid]["TotalAggregatedEVCostInCurrentCalendarMonth"] = ""
+
+    if last_month_billing_cost != 0:
+        JSON_REPORT[uuid]["TotalAggregatedEVCostInLastCalendarMonth"] = last_month_billing_cost
+    else:
+        JSON_REPORT[uuid]["TotalAggregatedEVCostInLastCalendarMonth"] = ""
+
+    # populating aggregated consumption data to JSON_RESPORT for particular uuid
+
+    if current_month_aggregated_consumption != 0:
+        JSON_REPORT[uuid]["TotalAggregatedEVConsumptionInCurrentCalendarMonth"] = current_month_aggregated_consumption
     else:
         JSON_REPORT[uuid]["TotalAggregatedEVConsumptionInCurrentCalendarMonth"] = ""
 
-    if last_month_billing_consumption != 0:
-        JSON_REPORT[uuid]["TotalAggregatedEVConsumptionInLastCalendarMonth"] = last_month_billing_consumption
+    if last_month_aggregated_consumption != 0:
+        JSON_REPORT[uuid]["TotalAggregatedEVConsumptionInLastCalendarMonth"] = last_month_aggregated_consumption
     else:
         JSON_REPORT[uuid]["TotalAggregatedEVConsumptionInLastCalendarMonth"] = ""
 
@@ -502,22 +607,22 @@ def get_survey_data(uuid):
         # for Q1 (for EV appliance)
         if questions["id"] == SURVEY_QUESTION_LIST[0]:
 
-            # EV is selected only if the survey answer is "Yes"
+            # Storing directly whatever the value of the answer chosen for this question for EV in the survey of not None or null
 
-            if questions["answers"] == "Yes":
-                JSON_REPORT[uuid]["EVansweredYESInSurvey"] = "YES"
+            if questions["answers"] != None:
+                JSON_REPORT[uuid]["EVansweredYESInSurvey"] = questions["answers"]
             else:
-                JSON_REPORT[uuid]["EVansweredYESInSurvey"] = "NO"
+                JSON_REPORT[uuid]["EVansweredYESInSurvey"] = ""
 
         # for Q6 (for Heating appliances)
         if questions["id"] == SURVEY_QUESTION_LIST[1]:
 
-            # Heating is selected only if the survey answer is not null
+            # Storing directly whatever the value of the answer chosen for this question for HEATING in the survey of not None or null
 
             if questions["answers"] != None:
-                JSON_REPORT[uuid]["HeatingAnsweredYESInSurvey"] = "YES"
+                JSON_REPORT[uuid]["HeatingAnsweredYESInSurvey"] = questions["answers"]
             else:
-                JSON_REPORT[uuid]["HeatingAnsweredYESInSurvey"] = "NO"
+                JSON_REPORT[uuid]["HeatingAnsweredYESInSurvey"] = ""
 
 
 '''
