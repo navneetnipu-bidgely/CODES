@@ -6,19 +6,19 @@ import datetime
 from xlwt import Workbook
 import pytz
 
-# needed constant user input variables
+# Below are the needed user input variables
 
 # Data server url for pseg (prod-na)
 DATA_SERVER_URL = "https://naapi.bidgely.com"
 
 # Access token for authentication of APIs
-ACCESS_TOKEN = "60b026a9-cdb6-4f0c-96fa-66d8fe8e4a30"
+ACCESS_TOKEN = "40619138-b78f-4851-98ca-588b61fd3bcf"
 
 # Putting payload parameters required for API call
 PARAMS = {"access_token": ACCESS_TOKEN}
 
 # limiting number of threads to restrict any cpu overloading
-NO_OF_THREADS_TO_BE_MADE = 2
+NO_OF_THREADS_TO_BE_MADE = 10
 
 # chunk size that will be used to run all threads (NO_OF_THREADS_TO_BE_MADE) on particular chunk of users
 TOU_CHUNK_SIZE = 2
@@ -27,7 +27,7 @@ NON_TOU_CHUNK_SIZE = 2
 # time zone of pilot
 TIMEZONE = "America/New_York"
 
-# time zone conversion
+# time zone conversion (not user input)
 NY_TZ = pytz.timezone('America/New_York')
 
 # mode of data to be fetched (can be day,month year etc.)
@@ -93,11 +93,6 @@ SURVEY_API = DATA_SERVER_URL + "/v2.0/users/{uuid}/homes/" + str(HID) + "/survey
 AGGREGATED_COST_API = DATA_SERVER_URL + "/billingdata/users/{uuid}/homes/" + str(
     HID) + "/aggregatedCost/{appId}/{cType}?planNumber={planNumber}&t0={t0}&t1={t1}" + "&mode={mode}" + "&tz=" + TIMEZONE
 
-'''
-    below are the functions to get required user data to be populated in excel sheet later on.
-    USER_API_DATA (MULTITHREADED) => JSON_DATA => EXCEL SHEET
-'''
-
 # uuid report (OUTPUT) data stored in json format that will be later on exported to excel sheet
 '''
     # JSON_REPORT datastructure
@@ -124,6 +119,9 @@ AGGREGATED_COST_API = DATA_SERVER_URL + "/billingdata/users/{uuid}/homes/" + str
 
 '''
 
+# initializing output variable globally with empty json
+JSON_REPORT = {}
+
 # Excel sheet header list
 SHEET_HEADER_DATA = ["UUID", "RatePlanID", "PlanNumber", "RatePlanSchedule", "LastMonth", "CurrentMonth",
                      "EVDetectedInItemizationLastMonth", "EVDetectedInItemizationCurrentMonth",
@@ -133,7 +131,10 @@ SHEET_HEADER_DATA = ["UUID", "RatePlanID", "PlanNumber", "RatePlanSchedule", "La
                      "TotalAggregatedEVCostInCurrentCalendarMonth", "TotalAggregatedEVConsumptionInLastCalendarMonth",
                      "TotalAggregatedEVCostInLastCalendarMonth"]
 
-JSON_REPORT = {}
+'''
+    below are the functions to get required user data to be populated in excel sheet later on.
+    USER_API_DATA (MULTITHREADED) => JSON_DATA => EXCEL SHEET
+'''
 
 TOU_UUID = []
 NON_TOU_UUID = []
@@ -749,7 +750,7 @@ if __name__ == '__main__':
         chunk_len_for_each_thread = math.ceil(chunk["end"] - chunk["start"]) + 1
         CHUNK_FOR_EACH_THREADS = create_chunks(start_index=chunk["start"],
                                                end_index=chunk["start"] + chunk_len_for_each_thread - 1,
-                                               size=NO_OF_THREADS_TO_BE_MADE)
+                                               size=min(chunk_len_for_each_thread, NO_OF_THREADS_TO_BE_MADE))
 
         print("chunk: ", chunk, " chunk for each thread:", CHUNK_FOR_EACH_THREADS)
 
@@ -764,7 +765,7 @@ if __name__ == '__main__':
         chunk_len_for_each_thread = math.ceil(chunk["end"] - chunk["start"]) + 1
         CHUNK_FOR_EACH_THREADS = create_chunks(start_index=chunk["start"],
                                                end_index=chunk["start"] + chunk_len_for_each_thread - 1,
-                                               size=NO_OF_THREADS_TO_BE_MADE)
+                                               size=min(chunk_len_for_each_thread, NO_OF_THREADS_TO_BE_MADE))
 
         print("chunk: ", chunk, " chunk for each thread:", CHUNK_FOR_EACH_THREADS)
 
@@ -789,7 +790,3 @@ if __name__ == '__main__':
     print("data writing to excel done")
 
     print("code execution completed!")
-
-
-
-
