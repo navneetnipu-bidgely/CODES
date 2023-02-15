@@ -42,8 +42,8 @@ PARAMS = {"access_token": ACCESS_TOKEN}
 NO_OF_THREADS_TO_BE_MADE = 10
 
 # chunk size that will be used to run all threads (NO_OF_THREADS_TO_BE_MADE) on particular chunk of users
-TOU_CHUNK_SIZE = 2
-NON_TOU_CHUNK_SIZE = 2
+TOU_CHUNK_SIZE = 5
+NON_TOU_CHUNK_SIZE = 5
 
 # time zone of pilot
 TIMEZONE = "America/New_York"
@@ -91,8 +91,8 @@ RATE_PLAN_TO_CATEGORY_MAPPING = {190: "tou", 191: "tou", 192: "tou", 193: "tou",
 RATE_PLAN_MAPPING = {1: 180, 10: 580, 37: 190, 41: 191, 42: 192, 34: 193}
 
 # cTypes programId
-TIER_PROGRAM_ID = "0fa90f13-2ec8-4768-b1b1-a764d57955c9"
-TOU_PROGRAM_ID = "63302766-1cc4-43dd-9bd9-70ed72b2ddf5"
+TIER_PROGRAM_ID = "d433eb2b-99ef-4a08-861e-2f0cab44758e"
+TOU_PROGRAM_ID = "43d9fa80-da8e-44c3-b08b-32e1013a5272"
 # rate category to proramID mapping(for internal use)
 FIND_PROGRAM_ID_FROM_RATE_CATEGORY = {"tou": TOU_PROGRAM_ID, "tier": TIER_PROGRAM_ID}
 
@@ -240,18 +240,18 @@ def get_uuid_rate_info(uuid):
         new_rate_info = ratesSchedule[rates_schedule_length - 1]
         rate_plan_schedule["newInfo"] = {
             "newStartTime": NY_TZ.localize(datetime.datetime.fromtimestamp(new_rate_info["startTime"])).strftime(
-                '%d/%m/%Y'),
-            "newEndTime": NY_TZ.localize(datetime.datetime.fromtimestamp(new_rate_info["endTime"])).strftime(
-                '%d/%m/%Y'), "newPlanNumber": new_rate_info["metaData"]["planNumber"]}
+                '%m%d%Y'),
+            "newEndTime": NY_TZ.localize(datetime.datetime.fromtimestamp(new_rate_info["endTime"])).strftime('%m%d%Y'),
+            "newPlanNumber": new_rate_info["metaData"]["planNumber"]}
 
         # old rate information is the second last json occurence of ratesSchedule list if contains more than 2 occurences otherwise old rate information will be same as new rate information
         if rates_schedule_length >= 2:
             old_rate_info = ratesSchedule[rates_schedule_length - 2]
             rate_plan_schedule["oldInfo"] = {
                 "oldStartTime": NY_TZ.localize(datetime.datetime.fromtimestamp(old_rate_info["startTime"])).strftime(
-                    '%d/%m/%Y'),
+                    '%m%d%Y'),
                 "oldEndTime": NY_TZ.localize(datetime.datetime.fromtimestamp(old_rate_info["endTime"])).strftime(
-                    '%d/%m/%Y'), "oldPlanNumber": old_rate_info["metaData"]["planNumber"]}
+                    '%m%d%Y'), "oldPlanNumber": old_rate_info["metaData"]["planNumber"]}
 
     # populating user specific rateSchedule data into global variable JSON_REPORT that will contain rate data for all listed users
     JSON_REPORT[uuid]["RatePlanSchedule"] = rate_plan_schedule
@@ -350,17 +350,13 @@ def get_billing_data_info(uuid, PlanNumber):
 
         # for current completed month
 
-        # adding program_id to api parameter locally
-        params = PARAMS
-        params["programId"] = FIND_PROGRAM_ID_FROM_RATE_CATEGORY[rate_category]
-
         # finding aggreagted cost
 
         api_data_billingCost_CurrentMonth_json = api_call(
             api=AGGREGATED_COST_API.format(uuid=uuid, appId=APPLIANCE_ID_LIST[0], cType="billing_cost",
                                            planNumber=PlanNumber, t0=CURRENT_COMPLETED_CALENDER_START_TIMESTAMP,
                                            t1=CURRENT_COMPLETED_CALENDER_END_TIMESTAMP, mode="month"), method='GET',
-            params=params, data="")
+            params=PARAMS, data="")
 
         # calculating aggregated billing cost for current month
         for timestamp in api_data_billingCost_CurrentMonth_json:
@@ -372,7 +368,7 @@ def get_billing_data_info(uuid, PlanNumber):
             api=AGGREGATED_COST_API.format(uuid=uuid, appId=APPLIANCE_ID_LIST[0], cType=rate_category,
                                            planNumber=PlanNumber, t0=CURRENT_COMPLETED_CALENDER_START_TIMESTAMP,
                                            t1=CURRENT_COMPLETED_CALENDER_END_TIMESTAMP, mode="month"), method='GET',
-            params=params, data="")
+            params=PARAMS, data="")
 
         # calculating aggregated consumption for current month
         for timestamp in api_data_tou_consumption_currentMonth_json:
@@ -389,7 +385,7 @@ def get_billing_data_info(uuid, PlanNumber):
             api=AGGREGATED_COST_API.format(uuid=uuid, appId=APPLIANCE_ID_LIST[0], cType="billing_cost",
                                            planNumber=PlanNumber, t0=LAST_COMPLETED_CALENDER_START_TIMESTAMP,
                                            t1=LAST_COMPLETED_CALENDER_END_TIMESTAMP, mode="month"), method='GET',
-            params=params, data="")
+            params=PARAMS, data="")
 
         # calculating aggregated billing cost for last month
         for timestamp in api_data_billingCost_LastMonth_json:
@@ -401,7 +397,7 @@ def get_billing_data_info(uuid, PlanNumber):
             api=AGGREGATED_COST_API.format(uuid=uuid, appId=APPLIANCE_ID_LIST[0], cType=rate_category,
                                            planNumber=PlanNumber, t0=LAST_COMPLETED_CALENDER_START_TIMESTAMP,
                                            t1=LAST_COMPLETED_CALENDER_END_TIMESTAMP, mode="month"), method='GET',
-            params=params, data="")
+            params=PARAMS, data="")
 
         # calculating aggregated consumption for last month
         for timestamp in api_data_tou_consumption_LastMonth_json:
@@ -409,8 +405,6 @@ def get_billing_data_info(uuid, PlanNumber):
                 rate_category + "RrcMap"]
             for category in data:
                 last_month_aggregated_consumption += data[category]["tierCons"]
-
-
 
     elif JSON_REPORT[uuid]["RatePlanSchedule"] != {} or len(JSON_REPORT[uuid]["RatePlanSchedule"]) > 1:
         '''
@@ -420,8 +414,6 @@ def get_billing_data_info(uuid, PlanNumber):
             # find the particular t0 and t1 slabs
             # then fetch the api data using proper parameters
         '''
-
-        params = PARAMS
 
         # getting user details api response using USER_DETAILS_API in json format and extracting required rateSchedule json part from it
         api_data = api_call(api=USER_DETAILS_API.format(uuid=uuid), method='GET', params=PARAMS, data="")["payload"][
@@ -453,10 +445,12 @@ def get_billing_data_info(uuid, PlanNumber):
 
             params = PARAMS
 
-            if time_slab["new_rate_plan_applied"] == True:
-
+            # adding programId where time_slab["mode"]=day
+            if time_slab["mode"] == "day":
                 # adding program_id to api parameter locally using rate_category
                 params["programId"] = FIND_PROGRAM_ID_FROM_RATE_CATEGORY[new_rate_category]
+
+            if time_slab["new_rate_plan_applied"] == True:
 
                 # finding aggregated cost
                 api_data_billingCost_CurrentMonth_json = api_call(
@@ -483,13 +477,11 @@ def get_billing_data_info(uuid, PlanNumber):
                         current_month_aggregated_consumption += data[category]["tierCons"]
 
             else:
-                # adding program_id to api parameter locally using rate_category
-                params["programId"] = FIND_PROGRAM_ID_FROM_RATE_CATEGORY[old_rate_category]
 
                 # finding aggregated cost
                 api_data_billingCost_CurrentMonth_json = api_call(
                     api=AGGREGATED_COST_API.format(uuid=uuid, appId=APPLIANCE_ID_LIST[0], cType="billing_cost",
-                                                   planNumber=old_rate_category, t0=time_slab["start"],
+                                                   planNumber=old_rate_plan_number, t0=time_slab["start"],
                                                    t1=time_slab["end"], mode=time_slab["mode"]), method='GET',
                     params=params, data="")
 
@@ -519,9 +511,12 @@ def get_billing_data_info(uuid, PlanNumber):
 
             params = PARAMS
 
-            if time_slab["new_rate_plan_applied"] == True:
+            # adding programId where time_slab["mode"]=day
+            if time_slab["mode"] == "day":
                 # adding program_id to api parameter locally using rate_category
                 params["programId"] = FIND_PROGRAM_ID_FROM_RATE_CATEGORY[new_rate_category]
+
+            if time_slab["new_rate_plan_applied"] == True:
 
                 # finding aggregated cost
 
@@ -550,8 +545,6 @@ def get_billing_data_info(uuid, PlanNumber):
                         last_month_aggregated_consumption += data[category]["tierCons"]
 
             else:
-                # adding program_id to api parameter locally using rate_category
-                params["programId"] = FIND_PROGRAM_ID_FROM_RATE_CATEGORY[old_rate_category]
 
                 # finding aggregated cost
 
@@ -767,6 +760,14 @@ def thread_target_function(uuid_list, start, end):
             print(e)
 
         try:
+            print("user billing data is being fetched for user:", uuid)
+            get_billing_data_info(uuid=uuid, PlanNumber=JSON_REPORT[uuid]["PlanNumber"])
+            print("user billing data fetch completed for user:", uuid)
+        except Exception as e:
+            print("exception occured while fetching user billing data for user:", uuid)
+            print(e)
+
+        try:
             print("user disagg data is being fetched for user:", uuid)
             get_disagg_data(uuid)
             print("user disagg data fetch completed for user:", uuid)
@@ -780,14 +781,6 @@ def thread_target_function(uuid_list, start, end):
             print("user survey data fetch completed for user:", uuid)
         except Exception as e:
             print("exception occured while fetching user survey data for user:", uuid)
-            print(e)
-
-        try:
-            print("user billing data is being fetched for user:", uuid)
-            get_billing_data_info(uuid=uuid, PlanNumber=JSON_REPORT[uuid]["PlanNumber"])
-            print("user billing data fetch completed for user:", uuid)
-        except Exception as e:
-            print("exception occured while fetching user billing data for user:", uuid)
             print(e)
 
         print("Data fetching completed for user:", uuid)
@@ -900,7 +893,7 @@ def export_json_to_excelSheet(uuid_list, user_tier):
     except Exception as e:
         print("exception occured while exporting data to excel for user:", uuid)
         print(e)
-    wb.save('/Users/navneetnipu/Desktop/report.xlsx')
+    wb.save('/Users/navneetnipu/Desktop/' + user_tier + '_report.xlsx')
 
 
 if __name__ == '__main__':
