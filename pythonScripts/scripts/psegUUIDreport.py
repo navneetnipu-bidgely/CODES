@@ -748,6 +748,10 @@ if __name__ == '__main__':
     # forming chunk for threads for tou users
     for chunk in CHUNK_INDICES_FOR_TOU:
         chunk_len_for_each_thread = math.ceil(chunk["end"] - chunk["start"]) + 1
+
+        # using min(chunk_len_for_each_thread,NO_OF_THREADS_TO_BE_MADE) because if thread size is more than uuids in 1 chunk then
+        # no use of extra threads
+        # thread size should be less than or equal to chunk size for each thread
         CHUNK_FOR_EACH_THREADS = create_chunks(start_index=chunk["start"],
                                                end_index=chunk["start"] + chunk_len_for_each_thread - 1,
                                                size=min(chunk_len_for_each_thread, NO_OF_THREADS_TO_BE_MADE))
