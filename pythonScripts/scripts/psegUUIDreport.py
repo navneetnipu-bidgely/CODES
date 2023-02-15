@@ -694,18 +694,45 @@ def api_call(method, api, params, data):
 # thread target function that will perform all operations for a user using a perticular thread
 def thread_target_function(uuid_list, start, end):
     for uuid in uuid_list[start:end + 1]:
-        get_uuid_rate_info(uuid)
-        print("user rate information data fetch completed for user:", uuid)
-        get_completed_billing_cycles(uuid, 2)
-        print("user required completed billing cycle data fetch completed for user:", uuid)
-        get_disagg_data(uuid)
-        print("user disagg data fetch completed for user:", uuid)
-        get_survey_data(uuid)
-        print("user survey data fetch completed for user:", uuid)
-        get_billing_data_info(uuid=uuid, PlanNumber=JSON_REPORT[uuid]["PlanNumber"])
-        print("user billing data fetch completed for user:", uuid)
-        print("copmplete data fetched for user:", uuid, " is:\n", JSON_REPORT[uuid])
-        print("thread_target_function for user:", uuid, " done")
+
+        try:
+            get_uuid_rate_info(uuid)
+            print("user rate information data fetch completed for user:", uuid)
+        except Exception:
+            print("exception occured while fetching user rate information for user:", uuid)
+            print(Exception)
+
+        try:
+            get_completed_billing_cycles(uuid, 2)
+            print("user required completed billing cycle data fetch completed for user:", uuid)
+        except Exception:
+            print("exception occured while fetching user required completed billing cycle for user:", uuid)
+            print(Exception)
+
+        try:
+            get_disagg_data(uuid)
+            print("user disagg data fetch completed for user:", uuid)
+        except Exception:
+            print("exception occured while fetching user disagg data for user:", uuid)
+            print(Exception)
+
+        try:
+            get_survey_data(uuid)
+            print("user survey data fetch completed for user:", uuid)
+        except Exception:
+            print("exception occured while fetching user survey data for user:", uuid)
+            print(Exception)
+
+        try:
+            get_billing_data_info(uuid=uuid, PlanNumber=JSON_REPORT[uuid]["PlanNumber"])
+            print("user billing data fetch completed for user:", uuid)
+        except Exception:
+            print("exception occured while fetching user billing data for user:", uuid)
+            print(Exception)
+
+        print("Data fetching completed for user:", uuid)
+        print("Data fetched for user:", uuid, " is:\n", JSON_REPORT[uuid])
+        print("thread_target_function for user:", uuid, " completed")
 
 
 # function to create different sets of uuids(chunks) so as to perform api call on them using multithreading
