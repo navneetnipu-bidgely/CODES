@@ -1,12 +1,30 @@
+#!/bin/python3
 # please get these packages installed before executing this program.
 
+# packages required to handle json data structure or put api responses into json
 import json
+
+# packages required to handle mathematical operations like min,ceil or floor functions
 import math
+
+# packages required for executing multithreading
 import threading
+
+# packages required to handle api callings
 import requests
+
+# packages required to handle date,time,locale etc conversions or releted operations
 import datetime
-from xlwt import Workbook
 import pytz
+
+# packages required to handle excel sheet read or write operations
+from xlwt import Workbook
+
+# packages required to handle operations releted to stuff in local computer
+import os
+
+# packages required to handle logging operations like create log file, write in log file at different log level like info,debug,warning etc
+import logging
 
 # Below are the required user input variables
 
@@ -84,6 +102,28 @@ LAST_COMPLETED_CALENDER_END_TIMESTAMP = 1672545200
 CURRENT_COMPLETED_CALENDER_START_TIMESTAMP = 1672549200
 CURRENT_COMPLETED_CALENDER_END_TIMESTAMP = 1675227500
 
+# initializing CURRENT_COMPLETED_MONTH and lastCompletedMonth variables that will hold cycle data at user level
+# They will be used for timestamps when data in JSON_REPORT are changed to MMDDYYYY
+CURRENT_COMPLETED_MONTH = {}
+LAST_COMPLETED_MONTH = {}
+
+# get the current date and time
+current_datetime = datetime.datetime.now()
+
+# format the current date and time as a string
+formatted_datetime = current_datetime.strftime("%d%m%Y%H%M%S")
+# file path for logger
+
+# create a log file
+with open("/Users/navneetnipu/Desktop/psegReportLogFile" + formatted_datetime + ".log", 'w') as file:
+    pass
+
+LOG_FILE_PATH = "/Users/navneetnipu/Desktop/psegReportLogFile" + formatted_datetime + ".log"
+
+# Configure the logging module
+# change the level config for different log level like log,debug,warning etc.
+logging.basicConfig(filename=LOG_FILE_PATH, level=logging.INFO)
+
 # list of apis to be used in below code
 # {{url}}/v2.0/users/{{uuid}}/
 # {{url}}/billingdata/users/{{uuid}}/homes/{{hid}}/billingcycles?t0={{t0}}&t1={{t1}}
@@ -159,9 +199,9 @@ def get_uuid_list_from_file(file_path):
 
         return user_list
 
-    except Exception:
+    except Exception as e:
         print("exception occured while getting uuid list from file ", file_path)
-        print(Exception)
+        print(e)
 
 
 '''
@@ -227,7 +267,7 @@ def get_completed_billing_cycles(uuid, no_of_last_completed_cycles):
                              params=PARAMS, data="")
 
     # after getting the api data, we need to sort the json data as per key in descending order and
-    # iterate over the data to find last two completed cycles (bidgelyGeneratedInvoice=false)
+    # iterate over the data to find last two completed cycles (bidgelyGeneratedInvoice=false/true doesnt matter)
 
     billingStartTimestamps_list = list(api_data_json.keys())
     # sorting the start timestamps in decending order
@@ -240,24 +280,35 @@ def get_completed_billing_cycles(uuid, no_of_last_completed_cycles):
     # variable to take a count of completed cycles stored in last_completed_cycles_info which should not exceed no_of_last_completed_cycles
     completed_cycle_index = 1
     for startTimestamp in billingStartTimestamps_list:
-        if api_data_json[startTimestamp]["bidgelyGeneratedInvoice"] == False:
-            last_completed_cycles_info[completed_cycle_index] = {
-                "billingStartTs": api_data_json[startTimestamp]["billingStartTs"],
-                "billingEndTs": api_data_json[startTimestamp]["billingEndTs"]}
-            if completed_cycle_index < no_of_last_completed_cycles:
-                completed_cycle_index += 1
-            else:
-                break
+        last_completed_cycles_info[completed_cycle_index] = {
+            "billingStartTs": api_data_json[startTimestamp]["billingStartTs"],
+            "billingEndTs": api_data_json[startTimestamp]["billingEndTs"]}
+        if completed_cycle_index < no_of_last_completed_cycles:
+            completed_cycle_index += 1
+        else:
+            break
 
     if 1 in last_completed_cycles_info:
+        # populating current_completed_cycles_info in global variables
+        CURRENT_COMPLETED_MONTH[uuid] = {"billingStartTs": last_completed_cycles_info[1]["billingStartTs"],
+                                         "billingEndTs": last_completed_cycles_info[1]["billingEndTs"]}
+
         # adding the current_completed_cycles_info data to JSON_REPORT
-        JSON_REPORT[uuid]["CurrentMonth"] = {"billingStartTs": last_completed_cycles_info[1]["billingStartTs"],
-                                             "billingEndTs": last_completed_cycles_info[1]["billingEndTs"]}
+        JSON_REPORT[uuid]["CurrentMonth"] = {"billingStartTs": NY_TZ.localize(
+            datetime.datetime.fromtimestamp(CURRENT_COMPLETED_MONTH[uuid]["billingStartTs"])).strftime('%m%d%Y'),
+                                             "billingEndTs": NY_TZ.localize(datetime.datetime.fromtimestamp(
+                                                 CURRENT_COMPLETED_MONTH[uuid]["billingEndTs"])).strftime('%m%d%Y')}
 
     if 2 in last_completed_cycles_info:
+        # populating last_completed_cycles_info in global variables
+        LAST_COMPLETED_MONTH[uuid] = {"billingStartTs": last_completed_cycles_info[2]["billingStartTs"],
+                                      "billingEndTs": last_completed_cycles_info[2]["billingEndTs"]}
+
         # adding the last_completed_cycles_info data to JSON_REPORT
-        JSON_REPORT[uuid]["LastMonth"] = {"billingStartTs": last_completed_cycles_info[2]["billingStartTs"],
-                                          "billingEndTs": last_completed_cycles_info[2]["billingEndTs"]}
+        JSON_REPORT[uuid]["LastMonth"] = {"billingStartTs": NY_TZ.localize(
+            datetime.datetime.fromtimestamp(LAST_COMPLETED_MONTH[uuid]["billingStartTs"])).strftime('%m%d%Y'),
+                                          "billingEndTs": NY_TZ.localize(datetime.datetime.fromtimestamp(
+                                              LAST_COMPLETED_MONTH[uuid]["billingEndTs"])).strftime('%m%d%Y')}
 
 
 # function to get aggregatedCost and consumption information for particular app id (for now EV, appId=18)
@@ -560,7 +611,7 @@ def get_disagg_data(uuid):
         # defining the t0 and t1 from last completed cycles data stored in JSON_REPORT for give uuid
 
         # current completed cycle
-        current_completed_cycles_data = JSON_REPORT[uuid]["CurrentMonth"]
+        current_completed_cycles_data = CURRENT_COMPLETED_MONTH[uuid]
         t0 = current_completed_cycles_data["billingStartTs"]
         t1 = current_completed_cycles_data["billingEndTs"]
         api_data_json = api_call(api=DISAGG_DATA_API.format(uuid=uuid, t0=t0, t1=t1), method='GET', params=PARAMS,
@@ -574,7 +625,7 @@ def get_disagg_data(uuid):
                     "appId": appId, "value": disagg_data["value"]}
 
         # last completed cycle
-        last_completed_cycles_data = JSON_REPORT[uuid]["LastMonth"]
+        last_completed_cycles_data = LAST_COMPLETED_MONTH[uuid]
         t0 = last_completed_cycles_data["billingStartTs"]
         t1 = last_completed_cycles_data["billingEndTs"]
         api_data_json = api_call(api=DISAGG_DATA_API.format(uuid=uuid, t0=t0, t1=t1), method='GET', params=PARAMS,
@@ -685,8 +736,12 @@ def api_call(method, api, params, data):
             response = requests.get(url=api, params=params)
             if response.status_code == 200:
                 response_json = response.json()
-    except Exception:
-        print("exception occured while fetching from ", api, "\n", Exception)
+    except Exception as e:
+        print("exception occured while fetching from ", api, "\n", e)
+
+    # logging the api ionformation in logger file
+    logging.info(
+        "api calling:\n" + " api:" + str(api) + " params:" + str(params) + "\n" + "response:\n" + str(response_json))
 
     return response_json
 
@@ -696,39 +751,44 @@ def thread_target_function(uuid_list, start, end):
     for uuid in uuid_list[start:end + 1]:
 
         try:
+            print("user rate information data is being fetched for user:", uuid)
             get_uuid_rate_info(uuid)
             print("user rate information data fetch completed for user:", uuid)
-        except Exception:
+        except Exception as e:
             print("exception occured while fetching user rate information for user:", uuid)
-            print(Exception)
+            print(e)
 
         try:
+            print("user required completed billing cycle data is being fetched for user:", uuid)
             get_completed_billing_cycles(uuid, 2)
             print("user required completed billing cycle data fetch completed for user:", uuid)
-        except Exception:
+        except Exception as e:
             print("exception occured while fetching user required completed billing cycle for user:", uuid)
-            print(Exception)
+            print(e)
 
         try:
+            print("user disagg data is being fetched for user:", uuid)
             get_disagg_data(uuid)
             print("user disagg data fetch completed for user:", uuid)
-        except Exception:
+        except Exception as e:
             print("exception occured while fetching user disagg data for user:", uuid)
-            print(Exception)
+            print(e)
 
         try:
+            print("user survey data is being fetched for user:", uuid)
             get_survey_data(uuid)
             print("user survey data fetch completed for user:", uuid)
-        except Exception:
+        except Exception as e:
             print("exception occured while fetching user survey data for user:", uuid)
-            print(Exception)
+            print(e)
 
         try:
+            print("user billing data is being fetched for user:", uuid)
             get_billing_data_info(uuid=uuid, PlanNumber=JSON_REPORT[uuid]["PlanNumber"])
             print("user billing data fetch completed for user:", uuid)
-        except Exception:
+        except Exception as e:
             print("exception occured while fetching user billing data for user:", uuid)
-            print(Exception)
+            print(e)
 
         print("Data fetching completed for user:", uuid)
         print("Data fetched for user:", uuid, " is:\n", JSON_REPORT[uuid])
@@ -837,16 +897,50 @@ def export_json_to_excelSheet(uuid_list, user_tier):
             row += 1
             wb.save('/Users/navneetnipu/Desktop/' + user_tier + '_report.xlsx')
 
-    except Exception:
+    except Exception as e:
         print("exception occured while exporting data to excel for user:", uuid)
-        print(Exception)
+        print(e)
     wb.save('/Users/navneetnipu/Desktop/report.xlsx')
 
 
 if __name__ == '__main__':
     print("Entered into main function...")
-    # test user in prodna for pseg
-    uuid = "5d980060-64ee-4d4a-bb69-7b9b99f4ec34"
+
+    try:
+        # logging the user input values to log file
+
+        logging.info("DATA_SERVER_URL:" + DATA_SERVER_URL)
+        logging.info("ACCESS_TOKEN:" + ACCESS_TOKEN)
+        logging.info("PARAMS:" + str(PARAMS))
+        logging.info("NO_OF_THREADS_TO_BE_MADE:" + str(NO_OF_THREADS_TO_BE_MADE))
+        logging.info("TOU_CHUNK_SIZE:" + str(TOU_CHUNK_SIZE))
+        logging.info("NON_TOU_CHUNK_SIZE:" + str(NON_TOU_CHUNK_SIZE))
+        logging.info("TIMEZONE:" + TIMEZONE)
+        logging.info("DEFAULT MODE:" + MODE)
+        logging.info("HID:" + str(HID))
+        logging.info("DEFAULT_T0:" + str(DEFAULT_T0))
+        logging.info("DEFAULT_T1:" + str(DEFAULT_T1))
+        logging.info("LOCALE:" + LOCALE)
+        logging.info("APPLIANCE_ID_LIST:" + str(APPLIANCE_ID_LIST))
+        logging.info("SURVEY_QUESTION_LIST:" + str(SURVEY_QUESTION_LIST))
+        logging.info("MEASUREMENT_TYPE:" + MEASUREMENT_TYPE)
+        logging.info("TOU_FILE_PATH:" + TOU_FILE_PATH)
+        logging.info("NONTOU_FILE_PATH:" + NONTOU_FILE_PATH)
+        logging.info("APPLIANCE_NAME_MAPPING:" + str(APPLIANCE_NAME_MAPPING))
+        logging.info("RATE_PLAN_TO_CATEGORY_MAPPING:" + str(RATE_PLAN_TO_CATEGORY_MAPPING))
+        logging.info("RATE_PLAN_MAPPING:" + str(RATE_PLAN_MAPPING))
+        logging.info("TIER_PROGRAM_ID:" + TIER_PROGRAM_ID)
+        logging.info("TOU_PROGRAM_ID:" + TOU_PROGRAM_ID)
+        logging.info("FIND_PROGRAM_ID_FROM_RATE_CATEGORY:" + str(FIND_PROGRAM_ID_FROM_RATE_CATEGORY))
+        logging.info("LAST_COMPLETED_CALENDER_START_TIMESTAMP:" + str(LAST_COMPLETED_CALENDER_START_TIMESTAMP))
+        logging.info("LAST_COMPLETED_CALENDER_END_TIMESTAMP:" + str(LAST_COMPLETED_CALENDER_END_TIMESTAMP))
+        logging.info("CURRENT_COMPLETED_CALENDER_START_TIMESTAMP:" + str(CURRENT_COMPLETED_CALENDER_START_TIMESTAMP))
+        logging.info("CURRENT_COMPLETED_CALENDER_END_TIMESTAMP:" + str(CURRENT_COMPLETED_CALENDER_END_TIMESTAMP))
+        print("logging user inputs completed")
+
+    except Exception as e:
+        print("exception occured while logging data into logger")
+        print(e)
 
     # getting tou uuid list from file
     print("getting uuid list for tou users from file ", TOU_FILE_PATH)
@@ -924,5 +1018,14 @@ if __name__ == '__main__':
     print("exporting of JSON_REPORT data to excel sheet for NONTOU users done")
 
     print("data writing to excel done")
+
+    try:
+        if os.path.isfile(LOG_FILE_PATH):
+            print("log file has been created at path:", LOG_FILE_PATH)
+        else:
+            print("log file has not been created at path:", LOG_FILE_PATH)
+    except Exception as e:
+        print("exception occured while reading file from directory :", LOG_FILE_PATH)
+        print(e)
 
     print("code execution completed!")
