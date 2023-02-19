@@ -53,6 +53,16 @@ MONTH_NUMBER_NAME_MAP=RateDataStructure.MONTH_NUMBER_NAME_MAP
 WEEK_NUMBER_NAME_MAP=RateDataStructure.WEEK_DAYS_NUMBER_NAME_MAP
 
 # output variable
+
+"""
+    RATE_PLAN_VALIDATION_OUTPUT_DATA[unique_key]={
+        "missing_months":[],
+        "missing_week_days":{month:[week days]},...},
+        "missing_days":{month:[],...},
+        "missing_hours":{month:{day:[]},...}
+    }
+"""
+
 RATE_PLAN_VALIDATION_OUTPUT_DATA={}
 
 # color printing color constant
@@ -101,7 +111,7 @@ def read_excelSheet_data(rate_sheet_file_path):
         workbook=openpyxl.load_workbook(rate_sheet_file_path)
     except Exception as e:
         print(RED_COLOR," Exception found while loading the excel sheet from given path:",rate_sheet_file_path)
-        print(e)
+        print(e,DEFAULT_COLOR)
 
     # getting all the sheet names in the above given sheet
     try:
@@ -111,7 +121,7 @@ def read_excelSheet_data(rate_sheet_file_path):
 
     except Exception as e:
         print(RED_COLOR," Exception found while getting the sheets names in the given sheet:",rate_sheet_file_path)
-        print(e)
+        print(e,DEFAULT_COLOR)
 
     # iterating over each sheet present in the given Excel sheet
     for sheetName in sheet_names:
@@ -155,7 +165,7 @@ def read_excelSheet_data(rate_sheet_file_path):
 
         except Exception as e:
             print(RED_COLOR," Exception occured while getting data from sheet:", sheetName)
-            print(e)
+            print(e,DEFAULT_COLOR)
 
 
     # Close the workbook
@@ -188,13 +198,13 @@ def validate_rate_plan(*sheet_data):
 
     # proceed with the validation of rate_plan_data
 
-    # validate_month_gaps(rate_data=rate_plan_data)
-    # validate_week_day_gaps(rate_data=rate_plan_data)
-    # validate_day_gaps(rate_data=rate_plan_data)
-    # validate_hour_gaps(rate_data=rate_plan_data)
+    validate_month_gaps(rate_data=rate_plan_data)
+    validate_week_day_gaps(rate_data=rate_plan_data)
+    validate_day_gaps(rate_data=rate_plan_data)
+    validate_hour_gaps(rate_data=rate_plan_data)
 
-    print(BLUE_COLOR,"Validation done for rate bands:",rate_plan_data.keys(),DEFAULT_COLOR)
-    print(GREEN_COLOR,"Rate plan validation done for sheet data:\n",sheet_data,DEFAULT_COLOR)
+    print(BLUE_COLOR,"Validation done for following unique rate bands:",rate_plan_data.keys(),DEFAULT_COLOR)
+    # print(GREEN_COLOR,"Rate plan validation done for sheet data:\n",sheet_data,DEFAULT_COLOR)
 
 
 
@@ -246,9 +256,8 @@ def generate_rate_validator_data_from_sheet_data(sheet_data):
             week_day_end = row_data[column_headers_to_column_number_mapping["weekHigh"]]
 
             for month_number in range(month_start, month_end + 1):
-                for day_number in range(day_start, day_end + 1):
-                    for week_day_number in range(week_day_start, week_day_end + 1):
-                        rate_plan_data[unique_key][MONTH_NUMBER_NAME_MAP[month_number]]['days'][day_number]['week_days'][WEEK_NUMBER_NAME_MAP[week_day_number]] = True
+                for week_day_number in range(week_day_start, week_day_end + 1):
+                    rate_plan_data[unique_key][MONTH_NUMBER_NAME_MAP[month_number]]['week_days'][WEEK_NUMBER_NAME_MAP[week_day_number]] = True
 
 
             # similarly populating in rate_plan_data the respective applicable hours for respective rate band key
@@ -281,14 +290,14 @@ def find_unique_key_for_rate_band(row_data,column_headers):
     valid_end_date = str(row_data[column_headers["validHigh"]])
     # consumption_low=str(row_data[column_headers["consumptionLow"]])
     # consumption_high=str(row_data[column_headers["consumptionHigh"]])
-    # is_holiday=str(row_data[column_headers["isHoliday"]])
+    is_holiday=str(row_data[column_headers["isHoliday"]])
     # rate=str(row_data[column_headers["rate"]])
     # threshold=str(row_data[column_headers["threshold"]])
     # tou_name=str(row_data[column_headers["touName"]])
     tier_name = str(row_data[column_headers["tierName"]])
     # group_name=str(row_data[column_headers["groupName"]])
 
-    unique_key=str(plan_number) + '|' + str(rate_band_id) + '|' + valid_start_date + '|' + valid_end_date + '|' + tier_name + '|'
+    unique_key="planNumber:"+str(plan_number) + '|' + "rateBandId:"+str(rate_band_id) + '|' + "validLow:"+valid_start_date + '|' + "validHigh:"+valid_end_date + '|'+"is_holiday:"+str(is_holiday)+'|' + "tier:"+tier_name
 
     return unique_key
 
@@ -301,35 +310,58 @@ def validate_month_gaps(rate_data):
     """
 
     try:
-        # for each unique rate band, check the month array having 0 or 1
-        # if 0 that means that hour is not included in that rate band
+        # for each unique rate band, check the month field
+        # if present key of each month is true that means that this month is not included in that rate band
 
         for unique_key in rate_data:
             # initialize the RATE_PLAN_VALIDATION_DATA for unique_key is not present
-            RATE_PLAN_VALIDATION_OUTPUT_DATA[unique_key]={
-                "missing_months":[],
-                "missing_week_days":[],
-                "missing_days":[],
-                "missing_hours":[]
-            }
+            if unique_key not in RATE_PLAN_VALIDATION_OUTPUT_DATA:
+                RATE_PLAN_VALIDATION_OUTPUT_DATA[unique_key]={}
+                RATE_PLAN_VALIDATION_OUTPUT_DATA[unique_key]["missing_months"]=[]
 
-            data=rate_data[unique_key]["month"]
+            months=rate_data[unique_key]
 
-            for month_value in data:
-                if month_value==0:
-                    pass
+            for month in months:
+                # for every month, if months[month]['present']==False then add the month in missing month list
+                if not months[month]['present']:
+                    RATE_PLAN_VALIDATION_OUTPUT_DATA[unique_key]["missing_months"].append(month)
+
+        print(GREEN_COLOR,"month wise validation done for following unique rate bands:\n",rate_data.keys(),DEFAULT_COLOR)
 
     except Exception as e:
-        print(RED_COLOR," Exception occured while validating month gaps for rate data:\n",rate_data)
-        print(e)
+        print(RED_COLOR," Exception occured while validating month gaps for rate band :\n", unique_key)
+        print(e,DEFAULT_COLOR)
 
 # todo function to validate week gaps
 def validate_week_day_gaps(rate_data):
     try:
-        pass
+        # for each unique rate band, check the week field of each month field
+        # if week_day key for week is true that means that this week is included in that rate band for this month
+
+        for unique_key in rate_data:
+            # RATE_PLAN_VALIDATION_DATA is already initialized in validate_month_gaps for each available unique key.
+            # initialize the RATE_PLAN_VALIDATION_DATA of a unique_key for missing_week_days is not present
+            if "missing_week_days" not in RATE_PLAN_VALIDATION_OUTPUT_DATA[unique_key]:
+                RATE_PLAN_VALIDATION_OUTPUT_DATA[unique_key]["missing_week_days"] = {}
+
+            months = rate_data[unique_key]
+
+
+            for month in months:
+                # for every month, if we need to iterate over 'week_days' key to find if a week_day is present or not
+                # for a particular month.
+                week_days=months[month]['week_days']
+                for day_of_week in week_days:
+                    if not week_days[day_of_week]:
+                        if month not in RATE_PLAN_VALIDATION_OUTPUT_DATA[unique_key]["missing_week_days"]:
+                            RATE_PLAN_VALIDATION_OUTPUT_DATA[unique_key]["missing_week_days"][month]=[]
+                        RATE_PLAN_VALIDATION_OUTPUT_DATA[unique_key]["missing_week_days"][month].append(day_of_week)
+
+        print(GREEN_COLOR, "week wise validation done for following unique rate bands:\n", rate_data.keys(), DEFAULT_COLOR)
+
     except Exception as e:
-        print(RED_COLOR," Exception occured while validating week gaps for rate data:\n", rate_data)
-        print(e)
+        print(RED_COLOR," Exception occured while validating week gaps for rate band :\n", unique_key)
+        print(e,DEFAULT_COLOR)
 
 # todo function to validate day gaps
 def validate_day_gaps(rate_data):
@@ -339,10 +371,33 @@ def validate_day_gaps(rate_data):
     """
 
     try:
-        pass
+        # for each unique rate band, check the days field of each month field
+        # if present key for a day of a month is true that means that this day is included in that rate band for this month
+
+        for unique_key in rate_data:
+            # RATE_PLAN_VALIDATION_DATA is already initialized in validate_month_gaps for each available unique key.
+            # initialize the RATE_PLAN_VALIDATION_DATA of a unique_key for missing_days if not present
+            if "missing_days" not in RATE_PLAN_VALIDATION_OUTPUT_DATA[unique_key]:
+                RATE_PLAN_VALIDATION_OUTPUT_DATA[unique_key]["missing_days"] = {}
+
+            months = rate_data[unique_key]
+
+            for month in months:
+                # for every month, if we need to iterate over 'days' key to find if a day is present or not
+                # for a particular month.
+                days = months[month]['days']
+                for day in days:
+                    if not days[day]['present']:
+
+                        if month not in RATE_PLAN_VALIDATION_OUTPUT_DATA[unique_key]["missing_days"]:
+                            RATE_PLAN_VALIDATION_OUTPUT_DATA[unique_key]["missing_week_days"][month] = []
+
+                        RATE_PLAN_VALIDATION_OUTPUT_DATA[unique_key]["missing_days"][month].append(day)
+
+        print(GREEN_COLOR, "day wise validation done for following unique rate bands:\n", rate_data.keys(), DEFAULT_COLOR)
     except Exception as e:
-        print(RED_COLOR," Exception occured while validating day gaps for rate data:\n", rate_data)
-        print(e)
+        print(RED_COLOR," Exception occured while validating day gaps for rate band :\n", unique_key)
+        print(e,DEFAULT_COLOR)
 
 # todo function to validate hour gaps
 def validate_hour_gaps(rate_data):
@@ -352,10 +407,40 @@ def validate_hour_gaps(rate_data):
     """
 
     try:
-        pass
+        # for each unique rate band, check the days field of each month field
+        # if present key for a day of a month is true that means that this day is included in that rate band for this month
+
+        for unique_key in rate_data:
+            # RATE_PLAN_VALIDATION_DATA is already initialized in validate_month_gaps for each available unique key.
+            # initialize the RATE_PLAN_VALIDATION_DATA of a unique_key for missing_hours if not present
+            if "missing_hours" not in RATE_PLAN_VALIDATION_OUTPUT_DATA[unique_key]:
+                RATE_PLAN_VALIDATION_OUTPUT_DATA[unique_key]["missing_hours"] ={}
+
+            months = rate_data[unique_key]
+
+            for month in months:
+                # for every month, if we need to iterate over 'days' key to find and then over each day's
+                # hours key to find the missing hours if thatbparticular day is included in the rate band
+                # for a particular month.
+                days = months[month]['days']
+                for day in days:
+                    if days[day]['present']:
+                        hours=days[day]['hours']
+                        for hour in hours:
+                            if not hours[hour]:
+                                print(hour)
+                                if month not in RATE_PLAN_VALIDATION_OUTPUT_DATA[unique_key]["missing_hours"]:
+                                    RATE_PLAN_VALIDATION_OUTPUT_DATA[unique_key]["missing_week_days"][month] = {}
+                                if day not in RATE_PLAN_VALIDATION_OUTPUT_DATA[unique_key]["missing_hours"][month]:
+                                    RATE_PLAN_VALIDATION_OUTPUT_DATA[unique_key]["missing_week_days"][month][day] =[]
+
+                                RATE_PLAN_VALIDATION_OUTPUT_DATA[unique_key]["missing_days"][month][day].append(hour)
+
+        print(GREEN_COLOR, "hour wise validation done for following unique rate bands:\n", rate_data.keys(), DEFAULT_COLOR)
+
     except Exception as e:
-        print(RED_COLOR," Exception occured while validating hour gaps for rate data:\n", rate_data)
-        print(e)
+        print(RED_COLOR," Exception occured while validating hour gaps for rate band :\n", unique_key)
+        print(e,DEFAULT_COLOR)
 
 # generate and execute threads
 def thread_generator_and_executor(all_sheet_data,thread_limit):
@@ -402,7 +487,7 @@ def thread_generator_and_executor(all_sheet_data,thread_limit):
 
     except Exception as e:
         print(RED_COLOR," Exception occured while processing sheet:", all_sheet_data.index(sheet))
-        print(e)
+        print(e,DEFAULT_COLOR)
 
 
 if __name__=='__main__':
@@ -417,7 +502,11 @@ if __name__=='__main__':
     thread_generator_and_executor(all_sheet_data=sheet_data,thread_limit=UserInputs.MAX_THREAD_LIMIT)
 
     print(BLUE_COLOR,"final rate validation data:")
-    print(GREEN_COLOR,RATE_PLAN_VALIDATION_OUTPUT_DATA,DEFAULT_COLOR)
+    print(GREEN_COLOR,json.dumps(RATE_PLAN_VALIDATION_OUTPUT_DATA, indent=4),DEFAULT_COLOR)
+
+    logging.info("RATE_PLAN_VALIDATION_OUTPUT_DATA:\n")
+    logging.info(RATE_PLAN_VALIDATION_OUTPUT_DATA)
+
     print(RED_COLOR,"main thread function executed.")
 
 

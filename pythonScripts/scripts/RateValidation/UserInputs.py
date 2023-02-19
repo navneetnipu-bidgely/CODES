@@ -11,4 +11,4 @@ MAX_THREAD_LIMIT=10
 RATE_COLUMN_NUMBER=17
 
 # log file path
-LOG_FILE_PATH="/Users/navneetnipu/Desktop/"
+LOG_FILE_PATH="/Users/navneetnipu/Desktop/rateValidationLogs/"

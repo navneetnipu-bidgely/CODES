@@ -1,9 +1,14 @@
+import calendar
 from datetime import datetime
 
 """
-    RATE_PLAN_DATA_STRUCTURE={
+    RATE_PLAN_DATA_STRUCTURE[unique_key]={
         'january':{
             'present':False/True,
+            'week_days':{
+                        'Monday':False/True,
+                        ...
+            },
             'days':{
                 1:{
                     'present':False/True,
@@ -11,11 +16,7 @@ from datetime import datetime
                         0:False,
                         1:False,
                         ...
-                        }
-                    'week_days':{
-                        'Monday':False/True,
-                        ...
-                    },
+                        },
                 2:{...},
                 ...
                 31:{...}
@@ -77,6 +78,7 @@ RATE_PLAN_DATA_STRUCTURE = {}
 for month_number in MONTH_NUMBER_NAME_MAP:
     RATE_PLAN_DATA_STRUCTURE[MONTH_NUMBER_NAME_MAP[month_number]]={
         'present':False,
+        'week_days': WEEK_DAYS_JSON_INITIALIZATION,
         'days':{}
     }
 
@@ -85,5 +87,4 @@ for month_number in MONTH_NUMBER_NAME_MAP:
         RATE_PLAN_DATA_STRUCTURE[MONTH_NUMBER_NAME_MAP[month_number]]['days'][day]={
             'present': False,
             'hours': HOURS_DICT_INITIALIZATION,
-            'week_days':WEEK_DAYS_JSON_INITIALIZATION
         }
