@@ -403,7 +403,7 @@ def get_season_of_month(start_timestamp, end_timestamp):
         month_start = get_month_day_year_number_from_timestamp(start_timestamp, "month")
         month_end = get_month_day_year_number_from_timestamp(end_timestamp, "month")
 
-        if start_timestamp == 0 and end_timestamp == 1:
+        if start_timestamp == 0 and end_timestamp == 0:
             return ""
 
         if month_start == month_end:
