@@ -9,6 +9,7 @@ import math
 
 # packages required for executing multithreading
 import threading
+import traceback
 
 # packages required to handle api callings
 import requests
@@ -32,7 +33,7 @@ import logging
 DATA_SERVER_URL = "https://naapi.bidgely.com"
 
 # Access token for authentication of APIs
-ACCESS_TOKEN = "1a5da145-5287-476e-83f5-a731121f2a05"
+ACCESS_TOKEN = "328b5551-7755-4071-92b0-3ade5e24a7cd"
 
 # Putting payload parameters required for API call
 # can be edited if needed to add any other api parameters
@@ -76,14 +77,14 @@ SURVEY_QUESTION_LIST = ["Q1", "Q6"]
 MEASUREMENT_TYPE = "ELECTRIC"
 
 # summer winter month mapping
-SUMMER_WINTER_MONTH_MAPPING = {1: "WINTER", 2: "WINTER", 3: "WINTER", 4: "WINTER", 5: "WINTER", 6: "SUMMER",
-                               7: "SUMMER", 8: "SUMMER", 9: "SUMMER", 10: "WINTER", 11: "WINTER", 12: "WINTER"}
+SUMMER_WINTER_MONTH_MAPPING = {1: "WINTER", 2: "WINTER", 3: "SUMMER", 4: "SUMMER", 5: "SUMMER", 6: "SHOULDER",
+                               7: "SHOULDER", 8: "SHOULDER", 9: "SUMMER", 10: "SUMMER", 11: "SUMMER", 12: "WINTER"}
 
 # tou file path
-TOU_FILE_PATH = "/Users/navneetnipu/Desktop/TOU_UUID.txt"
+TOU_FILE_PATH = "/Users/navneetnipu/Desktop/psegUserReport/TOU_UUID.txt"
 
 # nontou file path
-NONTOU_FILE_PATH = "/Users/navneetnipu/Desktop/NONTOU_UUID.txt"
+NONTOU_FILE_PATH = "/Users/navneetnipu/Desktop/psegUserReport/NONTOU_UUID.txt"
 
 # appliance name mapping
 APPLIANCE_NAME_MAPPING = {18: "EV", 4: "Heating"}
@@ -108,6 +109,7 @@ CURRENT_COMPLETED_CALENDER_END_TIMESTAMP = 1675227500
 
 # initializing CURRENT_COMPLETED_MONTH and lastCompletedMonth variables that will hold cycle data at user level
 # They will be used for timestamps when data in JSON_REPORT are changed to MMDDYYYY
+EXTRA_COMPLETED_MONTH = {}
 CURRENT_COMPLETED_MONTH = {}
 LAST_COMPLETED_MONTH = {}
 
@@ -119,10 +121,10 @@ formatted_datetime = current_datetime.strftime("%d%m%Y%H%M%S")
 # file path for logger
 
 # create a log file
-with open("/Users/navneetnipu/Desktop/psegReportLogFile" + formatted_datetime + ".log", 'w') as file:
+with open("/Users/navneetnipu/Desktop/psegUserReport/psegReportLogFile" + formatted_datetime + ".log", 'w') as file:
     pass
 
-LOG_FILE_PATH = "/Users/navneetnipu/Desktop/psegReportLogFile" + formatted_datetime + ".log"
+LOG_FILE_PATH = "/Users/navneetnipu/Desktop/psegUserReport/psegReportLogFile" + formatted_datetime + ".log"
 
 # Configure the logging module
 # change the level config for different log level like log,debug,warning etc.
@@ -146,10 +148,6 @@ SURVEY_API = DATA_SERVER_URL + "/v2.0/users/{uuid}/homes/" + str(HID) + "/survey
 AGGREGATED_COST_API = DATA_SERVER_URL + "/billingdata/users/{uuid}/homes/" + str(
     HID) + "/aggregatedCost/{appId}/{cType}?planNumber={planNumber}&t0={t0}&t1={t1}" + "&mode={mode}" + "&tz=" + TIMEZONE
 
-# todo timeslabs based on calender months and billing cycles falling in between calender months (current,previous,extra).
-# todo total days of current and last completed cycles falling in calender months.
-
-
 # uuid report (OUTPUT) data stored in json format that will be later on exported to Excel sheet
 '''
     # JSON_REPORT datastructure
@@ -159,14 +157,20 @@ AGGREGATED_COST_API = DATA_SERVER_URL + "/billingdata/users/{uuid}/homes/" + str
         "RatePlanID":value,
         "PlanNumber":value,
         "RatePlanSchedule":value,
+        "ExtraMonth":value,
+        "TotalBillingCycleDaysForExtraCompletedCycle":value,
+        "TotalDaysFallingInCalenderMonthForExtraCompletedCycle":value,
+        "ExtraMonthSeason":value,
         "LastMonth":value,
         "TotalBillingCycleDaysForLastCompletedCycle":value,
         "TotalDaysFallingInCalenderMonthForLastCompletedCycle":value,
-        "LastMonthWinterOrSummer":value,
+        "LastMonthSeason":value,
         "CurrentMonth":value,
         "TotalBillingCycleDaysForCurrentCompletedCycle":value,
         "TotalDaysFallingInCalenderMonthForCurrentCompletedCycle":value,
-        "CurrentMonthWinterOrSummer":value,
+        "CurrentMonthSeason":value,
+        "EVDetectedInItemizationExtraMonth":value,
+        "EVDetectedInItemizationExtraMonth":value,
         "EVDetectedInItemizationLastMonth":value,
         "EVDetectedInItemizationCurrentMonth":value,
         "HeatingDetectedInItemizationLastMonth":value,
@@ -187,11 +191,14 @@ AGGREGATED_COST_API = DATA_SERVER_URL + "/billingdata/users/{uuid}/homes/" + str
 JSON_REPORT = {}
 
 # Excel sheet header list
-SHEET_HEADER_DATA = ["UUID", "SolarUser", "RatePlanID", "PlanNumber", "RatePlanSchedule", "LastMonth",
+SHEET_HEADER_DATA = ["UUID", "SolarUser", "RatePlanID", "PlanNumber", "RatePlanSchedule", "ExtraMonth",
+                     "TotalBillingCycleDaysForExtraCompletedCycle",
+                     "TotalDaysFallingInCalenderMonthForExtraCompletedCycle", "ExtraMonthSeason", "LastMonth",
                      "TotalBillingCycleDaysForLastCompletedCycle",
-                     "TotalDaysFallingInCalenderMonthForLastCompletedCycle", "LastMonthWinterOrSummer", "CurrentMonth",
+                     "TotalDaysFallingInCalenderMonthForLastCompletedCycle", "LastMonthSeason", "CurrentMonth",
                      "TotalBillingCycleDaysForCurrentCompletedCycle",
-                     "TotalDaysFallingInCalenderMonthForCurrentCompletedCycle", "CurrentMonthWinterOrSummer",
+                     "TotalDaysFallingInCalenderMonthForCurrentCompletedCycle", "CurrentMonthSeason",
+                     "EVDetectedInItemizationExtraMonth", "EVDetectedInItemizationExtraMonth",
                      "EVDetectedInItemizationLastMonth", "EVDetectedInItemizationCurrentMonth",
                      "HeatingDetectedInItemizationLastMonth", "HeatingDetectedInItemizationCurrentMonth",
                      "EVansweredYESInSurvey", "HeatingAnsweredYESInSurvey",
@@ -220,7 +227,8 @@ def get_uuid_list_from_file(file_path):
 
     except Exception as e:
         print("exception occured while getting uuid list from file ", file_path)
-        print(e)
+        error_message = traceback.format_exc()
+        print(error_message)
 
 
 # function to check if user is solar or not
@@ -284,58 +292,85 @@ def get_uuid_rate_info(uuid):
     JSON_REPORT[uuid]["RatePlanSchedule"] = rate_plan_schedule
 
 
-# function to get start and end timestamp for last 2 completed cycles and convert thetiestamp to DDMMYYYY format but keep the original timestamps for further use
-def get_completed_billing_cycles(uuid, no_of_last_completed_cycles):
-    # by default making the values empty json
-    JSON_REPORT[uuid]["CurrentMonth"] = {}
-    JSON_REPORT[uuid]["LastMonth"] = {}
+# function to get start and end timestamp for all cycles overlapping with given calender months and convert the timestamp to DDMMYYYY format but keep the original timestamps for further use
+def get_billing_cycles_overlapping_with_calender_months(uuid):
+    try:
+        # by default making the values empty json for ExtraMonth,LastMonth,CurrentMonth
+        JSON_REPORT[uuid]["ExtraMonth"] = {"billingStartTs": 0, "billingEndTs": 0}
+        JSON_REPORT[uuid]["LastMonth"] = {}
+        JSON_REPORT[uuid]["CurrentMonth"] = {}
 
-    api_data_json = api_call(api=BILLING_DATA_API.format(uuid=uuid, t0=DEFAULT_T0, t1=DEFAULT_T1), method='GET',
-                             params=PARAMS, data="")
+        EXTRA_COMPLETED_MONTH[uuid] = {"billingStartTs": 0, "billingEndTs": 0}
 
-    # after getting the api data, we need to sort the json data as per key in descending order and
-    # iterate over the data to find last two completed cycles (bidgelyGeneratedInvoice=false/true doesnt matter)
+        api_data_json = api_call(api=BILLING_DATA_API.format(uuid=uuid, t0=DEFAULT_T0, t1=DEFAULT_T1), method='GET',
+                                 params=PARAMS, data="")
 
-    billingStartTimestamps_list = list(api_data_json.keys())
-    # sorting the start timestamps in decending order
-    billingStartTimestamps_list.sort(reverse=True)
+        # after getting the api data, we need to sort the json data as per key in descending order and
+        # iterate over the data to find cycles overlapping with given calender months (bidgelyGeneratedInvoice=false/true doesnt matter)
 
-    # for storing last completed cycles information,initializing last_completed_cycles_info
-    # last_completed_cycles_info data structure : last_completed_cycles_info={1:{billingStartTs:value,billingEndTs:value},2:{billingStartTs:value,billingEndTs:value},..}
-    last_completed_cycles_info = {}
+        billingStartTimestamps_list = list(api_data_json.keys())
+        # sorting the start timestamps in decending order
+        billingStartTimestamps_list.sort(reverse=True)
 
-    # variable to take a count of completed cycles stored in last_completed_cycles_info which should not exceed no_of_last_completed_cycles
-    completed_cycle_index = 1
-    for startTimestamp in billingStartTimestamps_list:
-        last_completed_cycles_info[completed_cycle_index] = {
-            "billingStartTs": api_data_json[startTimestamp]["billingStartTs"],
-            "billingEndTs": api_data_json[startTimestamp]["billingEndTs"]}
-        if completed_cycle_index < no_of_last_completed_cycles:
-            completed_cycle_index += 1
-        else:
-            break
+        # for storing the cycles' information,initializing billing_cycles_info
+        # billing_cycles_info data structure : billing_cycles_info={1:{billingStartTs:value,billingEndTs:value},2:{billingStartTs:value,billingEndTs:value},3:{billingStartTs:value,billingEndTs:value}}
+        billing_cycles_info = {}
+        cycle_index = 1
 
-    if 1 in last_completed_cycles_info:
-        # populating current_completed_cycles_info in global variables
-        CURRENT_COMPLETED_MONTH[uuid] = {"billingStartTs": last_completed_cycles_info[1]["billingStartTs"],
-                                         "billingEndTs": last_completed_cycles_info[1]["billingEndTs"]}
+        for start_timestamp in billingStartTimestamps_list:
 
-        # adding the current_completed_cycles_info data to JSON_REPORT
-        JSON_REPORT[uuid]["CurrentMonth"] = {"billingStartTs": NY_TZ.localize(
-            datetime.datetime.fromtimestamp(CURRENT_COMPLETED_MONTH[uuid]["billingStartTs"])).strftime('%m%d%Y'),
-                                             "billingEndTs": NY_TZ.localize(datetime.datetime.fromtimestamp(
-                                                 CURRENT_COMPLETED_MONTH[uuid]["billingEndTs"])).strftime('%m%d%Y')}
+            startTimestamp = int(start_timestamp)
 
-    if 2 in last_completed_cycles_info:
-        # populating last_completed_cycles_info in global variables
-        LAST_COMPLETED_MONTH[uuid] = {"billingStartTs": last_completed_cycles_info[2]["billingStartTs"],
-                                      "billingEndTs": last_completed_cycles_info[2]["billingEndTs"]}
+            endTimestamp = api_data_json[start_timestamp]["billingEndTs"]
 
-        # adding the last_completed_cycles_info data to JSON_REPORT
-        JSON_REPORT[uuid]["LastMonth"] = {"billingStartTs": NY_TZ.localize(
-            datetime.datetime.fromtimestamp(LAST_COMPLETED_MONTH[uuid]["billingStartTs"])).strftime('%m%d%Y'),
-                                          "billingEndTs": NY_TZ.localize(datetime.datetime.fromtimestamp(
-                                              LAST_COMPLETED_MONTH[uuid]["billingEndTs"])).strftime('%m%d%Y')}
+            # if there is overlapping days between calender months and billing cycles, we will consider that billing cycle
+            if (find_overlapping_days_between_two_pair_of_timestamps(
+                    billing_cycle_timestamps=api_data_json[start_timestamp],
+                    calender_start=LAST_COMPLETED_CALENDER_START_TIMESTAMP,
+                    calender_end=CURRENT_COMPLETED_CALENDER_END_TIMESTAMP)) > 1:
+                billing_cycles_info[cycle_index] = {"billingStartTs": startTimestamp, "billingEndTs": endTimestamp}
+                cycle_index += 1
+
+            if cycle_index > 3:
+                break
+
+        if 1 in billing_cycles_info:
+            # populating current_completed_cycles_info in global variables
+            CURRENT_COMPLETED_MONTH[uuid] = {"billingStartTs": billing_cycles_info[1]["billingStartTs"],
+                                             "billingEndTs": billing_cycles_info[1]["billingEndTs"]}
+
+            # adding the current_completed_cycles_info data to JSON_REPORT
+            JSON_REPORT[uuid]["CurrentMonth"] = {"billingStartTs": NY_TZ.localize(
+                datetime.datetime.fromtimestamp(CURRENT_COMPLETED_MONTH[uuid]["billingStartTs"])).strftime('%m%d%Y'),
+                                                 "billingEndTs": NY_TZ.localize(datetime.datetime.fromtimestamp(
+                                                     CURRENT_COMPLETED_MONTH[uuid]["billingEndTs"])).strftime('%m%d%Y')}
+
+        if 2 in billing_cycles_info:
+            # populating billing_cycles_info in global variables
+            LAST_COMPLETED_MONTH[uuid] = {"billingStartTs": billing_cycles_info[2]["billingStartTs"],
+                                          "billingEndTs": billing_cycles_info[2]["billingEndTs"]}
+
+            # adding the billing_cycles_info data to JSON_REPORT
+            JSON_REPORT[uuid]["LastMonth"] = {"billingStartTs": NY_TZ.localize(
+                datetime.datetime.fromtimestamp(LAST_COMPLETED_MONTH[uuid]["billingStartTs"])).strftime('%m%d%Y'),
+                                              "billingEndTs": NY_TZ.localize(datetime.datetime.fromtimestamp(
+                                                  LAST_COMPLETED_MONTH[uuid]["billingEndTs"])).strftime('%m%d%Y')}
+
+        if 3 in billing_cycles_info:
+            # populating billing_cycles_info in global variables
+            EXTRA_COMPLETED_MONTH[uuid] = {"billingStartTs": billing_cycles_info[3]["billingStartTs"],
+                                           "billingEndTs": billing_cycles_info[3]["billingEndTs"]}
+
+            # adding the billing_cycles_info data to JSON_REPORT
+            JSON_REPORT[uuid]["LastMonth"] = {"billingStartTs": NY_TZ.localize(
+                datetime.datetime.fromtimestamp(EXTRA_COMPLETED_MONTH[uuid]["billingStartTs"])).strftime('%m%d%Y'),
+                                              "billingEndTs": NY_TZ.localize(datetime.datetime.fromtimestamp(
+                                                  EXTRA_COMPLETED_MONTH[uuid]["billingEndTs"])).strftime('%m%d%Y')}
+
+    except Exception as e:
+        print("Exception occured while fetching billing cycles for uuid:", uuid)
+        error_message = traceback.format_exc()
+        print(error_message)
 
 
 # function to check if last and current completed cycles are summer or winter or shoulder months
@@ -343,17 +378,21 @@ def check_season_for_completed_cycles(uuid):
     try:
 
         # getting last and current completed months dats from JSON_REPORT for given uuid
+        extra_completed_cycle = EXTRA_COMPLETED_MONTH[uuid]
         last_completed_cycle = LAST_COMPLETED_MONTH[uuid]
         current_completed_cycle = CURRENT_COMPLETED_MONTH[uuid]
 
-        JSON_REPORT[uuid]["LastMonthWinterOrSummer"] = get_season_of_month(last_completed_cycle["billingStartTs"],
-                                                                           last_completed_cycle["billingEndTs"])
-        JSON_REPORT[uuid]["CurrentMonthWinterOrSummer"] = get_season_of_month(current_completed_cycle["billingStartTs"],
-                                                                              current_completed_cycle["billingEndTs"])
+        JSON_REPORT[uuid]["ExtraMonthSeason"] = get_season_of_month(extra_completed_cycle["billingStartTs"],
+                                                                    extra_completed_cycle["billingEndTs"])
+        JSON_REPORT[uuid]["LastMonthSeason"] = get_season_of_month(last_completed_cycle["billingStartTs"],
+                                                                   last_completed_cycle["billingEndTs"])
+        JSON_REPORT[uuid]["CurrentMonthSeason"] = get_season_of_month(current_completed_cycle["billingStartTs"],
+                                                                      current_completed_cycle["billingEndTs"])
 
     except Exception as e:
         print("Exception occured while finding season for completed cycles for uuid:", uuid)
-        print(e)
+        error_message = traceback.format_exc()
+        print(error_message)
 
 
 # function to find which season a cycle falls in
@@ -364,48 +403,22 @@ def get_season_of_month(start_timestamp, end_timestamp):
         month_start = get_month_day_year_number_from_timestamp(start_timestamp, "month")
         month_end = get_month_day_year_number_from_timestamp(end_timestamp, "month")
 
+        if start_timestamp == 0 and end_timestamp == 1:
+            return ""
+
         if month_start == month_end:
             # not qualified for shoulder month check
             return SUMMER_WINTER_MONTH_MAPPING[month_start]
 
-        elif month_start != month_end:
-
-            season_start = SUMMER_WINTER_MONTH_MAPPING[month_start]
-            season_end = SUMMER_WINTER_MONTH_MAPPING[month_end]
-
-            if (season_start != season_end):
-                # qualified for shoulder month check
-
-                # shoulder month logic
-
-                day_start = get_month_day_year_number_from_timestamp(start_timestamp, "day")
-                day_end = get_month_day_year_number_from_timestamp(end_timestamp, "day")
-
-                if (day_start == 15) and (day_end == 15):
-                    # only of day_start and day_end are 15 15, it will be considered as shoulder_month
-                    season = "SHOULDER_MONTH:" + season_start + "->" + season_end
-                    return season
-
-                elif (day_start < 15):
-                    # if more days are in season_start, we will consider the whole season as season_start
-                    return season_start
-                else:
-                    # if more days are in season_end and they are not 15, we will consider the whole season as season_end
-                    return season_end
-
-            else:
-                return season_start
-
+        else:
+            return "SEASON_CHANGE"
 
 
     except Exception as e:
         print("Exception occured while finding the season of month for timestamps:", start_timestamp, ":",
               end_timestamp)
-        print(e)
-
-    print("season:", season)
-
-    return season
+        error_message = traceback.format_exc()
+        print(error_message)
 
 
 # function to return month number from timestamp
@@ -420,20 +433,27 @@ def get_month_day_year_number_from_timestamp(timestamp, mode):
             output = date.year
     except Exception as e:
         print("Exception occured while finding day,month,year from timestamp for timestamp:", timestamp)
-        print(e)
+        error_message = traceback.format_exc()
+        print(error_message)
 
     return output
 
 
-# function to find no of billing cycle days for last and completed cycles
-def get_no_of_billing_cycle_days_for_last_and_current_completed_cycles(uuid):
+# function to find no of billing cycle days for billing cycles
+def get_no_of_billing_cycle_days_for_billing_cycles(uuid):
     # including cycle end day
-    no_of_days = ""
+    no_of_days_for_extra_completed_cycle = 0
 
     try:
-        # getting last and current completed months dats from JSON_REPORT for given uuid
+        # getting billing cycle dates from JSON_REPORT for given uuid
+        extra_completed_cycle = EXTRA_COMPLETED_MONTH[uuid]
         last_completed_cycle = LAST_COMPLETED_MONTH[uuid]
         current_completed_cycle = CURRENT_COMPLETED_MONTH[uuid]
+
+        if extra_completed_cycle["billingStartTs"] != 0:
+            no_of_days_for_extra_completed_cycle = find_no_of_days(
+                start_timestamp=extra_completed_cycle["billingStartTs"],
+                end_timestamp=extra_completed_cycle["billingEndTs"])
 
         no_of_days_for_last_completed_cycle = find_no_of_days(start_timestamp=last_completed_cycle["billingStartTs"],
                                                               end_timestamp=last_completed_cycle["billingEndTs"])
@@ -441,33 +461,100 @@ def get_no_of_billing_cycle_days_for_last_and_current_completed_cycles(uuid):
             start_timestamp=current_completed_cycle["billingStartTs"],
             end_timestamp=current_completed_cycle["billingEndTs"])
 
+        JSON_REPORT[uuid]["TotalBillingCycleDaysForExtraCompletedCycle"] = no_of_days_for_extra_completed_cycle
         JSON_REPORT[uuid]["TotalBillingCycleDaysForLastCompletedCycle"] = no_of_days_for_last_completed_cycle
         JSON_REPORT[uuid]["TotalBillingCycleDaysForCurrentCompletedCycle"] = no_of_days_for_current_completed_cycle
 
     except Exception as e:
         print("Exception occured while finding no of days for completed cycles for uuid:", uuid)
-        print(e)
+        error_message = traceback.format_exc()
+        print(error_message)
 
 
-# todo function to find no of days of last and current completed cycles falling in calender months
-def get_no_of_cycle_days_falling_in_calender_months_for_last_and_current_completed_cycles(uuid):
+# function to find no of days of last and current completed cycles falling in calender months
+def get_no_of_cycle_days_falling_in_calender_months_for_billing_cycles(uuid):
     # including cycle end day
-    no_of_days = ""
+
+    current = 0
+    previous = 0
 
     try:
-        # getting last and current completed months dats from JSON_REPORT for given uuid
+        # getting billing cycle dates from JSON_REPORT for given uuid
+
+        extra_completed_cycle = EXTRA_COMPLETED_MONTH[uuid]
         last_completed_cycle = LAST_COMPLETED_MONTH[uuid]
         current_completed_cycle = CURRENT_COMPLETED_MONTH[uuid]
 
-        no_of_days_for_last_completed_cycle = find_no_of_days(start_timestamp=0, end_timestamp=0)
-        no_of_days_for_current_completed_cycle = find_no_of_days(start_timestamp=0, end_timestamp=0)
+        # for extra cycle
+        if extra_completed_cycle["billingStartTs"] != 0:
+            current = find_overlapping_days_between_two_pair_of_timestamps(
+                billing_cycle_timestamps=extra_completed_cycle,
+                calender_start=CURRENT_COMPLETED_CALENDER_START_TIMESTAMP,
+                calender_end=CURRENT_COMPLETED_CALENDER_END_TIMESTAMP)
+            previous = find_overlapping_days_between_two_pair_of_timestamps(
+                billing_cycle_timestamps=extra_completed_cycle, calender_start=LAST_COMPLETED_CALENDER_START_TIMESTAMP,
+                calender_end=LAST_COMPLETED_CALENDER_END_TIMESTAMP)
+            no_of_days_for_extra_completed_cycle = {"current": current, "previous": previous}
+        else:
+            no_of_days_for_extra_completed_cycle = {"current": current, "previous": previous}
 
-        JSON_REPORT[uuid]["TotalDaysFallingInCalenderMonthForLastCompletedCycle"] = ""
-        JSON_REPORT[uuid]["TotalDaysFallingInCalenderMonthForCurrentCompletedCycle"] = ""
+        current = 0
+        previous = 0
+        # for last cycle
+
+        current = find_overlapping_days_between_two_pair_of_timestamps(billing_cycle_timestamps=last_completed_cycle,
+                                                                       calender_start=CURRENT_COMPLETED_CALENDER_START_TIMESTAMP,
+                                                                       calender_end=CURRENT_COMPLETED_CALENDER_END_TIMESTAMP)
+        previous = find_overlapping_days_between_two_pair_of_timestamps(billing_cycle_timestamps=last_completed_cycle,
+                                                                        calender_start=LAST_COMPLETED_CALENDER_START_TIMESTAMP,
+                                                                        calender_end=LAST_COMPLETED_CALENDER_END_TIMESTAMP)
+        no_of_days_for_last_completed_cycle = {"current": current, "previous": previous}
+
+        current = 0
+        previous = 0
+        # for current cycle
+
+        current = find_overlapping_days_between_two_pair_of_timestamps(billing_cycle_timestamps=current_completed_cycle,
+                                                                       calender_start=CURRENT_COMPLETED_CALENDER_START_TIMESTAMP,
+                                                                       calender_end=CURRENT_COMPLETED_CALENDER_END_TIMESTAMP)
+        previous = find_overlapping_days_between_two_pair_of_timestamps(
+            billing_cycle_timestamps=current_completed_cycle, calender_start=LAST_COMPLETED_CALENDER_START_TIMESTAMP,
+            calender_end=LAST_COMPLETED_CALENDER_END_TIMESTAMP)
+        no_of_days_for_current_completed_cycle = {"current": current, "previous": previous}
+
+        JSON_REPORT[uuid][
+            "TotalDaysFallingInCalenderMonthForExtraCompletedCycle"] = no_of_days_for_extra_completed_cycle
+        JSON_REPORT[uuid]["TotalDaysFallingInCalenderMonthForLastCompletedCycle"] = no_of_days_for_last_completed_cycle
+        JSON_REPORT[uuid][
+            "TotalDaysFallingInCalenderMonthForCurrentCompletedCycle"] = no_of_days_for_current_completed_cycle
 
     except Exception as e:
-        print("Exception occured while finding no of days for completed cycles for uuid:", uuid)
-        print(e)
+        print("Exception occured while finding overlapping days for billing cycles and calender months for uuid:", uuid)
+        error_message = traceback.format_exc()
+        print(error_message)
+
+
+# todo function to find overlapping days between billing cycles and calender months using startand end timestamps
+def find_overlapping_days_between_two_pair_of_timestamps(billing_cycle_timestamps, calender_start, calender_end):
+    calender_start = datetime.datetime.fromtimestamp(calender_start, tz=NY_TZ)
+    calender_end = datetime.datetime.fromtimestamp(calender_end, tz=NY_TZ)
+
+    bill_start = datetime.datetime.fromtimestamp(billing_cycle_timestamps["billingStartTs"], tz=NY_TZ)
+    bill_end = datetime.datetime.fromtimestamp(billing_cycle_timestamps["billingEndTs"], tz=NY_TZ)
+
+    # Find the start and end times of the overlap
+    start_time = max(bill_start, calender_start)
+    end_time = min(bill_end, calender_end)
+
+    # Calculate the number of overlapping days
+    if end_time < start_time:
+        num_of_overlapping_days = 0
+    else:
+        start_date = start_time.date()
+        end_date = end_time.date()
+        num_of_overlapping_days = (end_date - start_date).days + 1
+
+    return num_of_overlapping_days
 
 
 # function to find no of days from start and end timestamps
@@ -804,6 +891,23 @@ def get_disagg_data(uuid):
                                                                                                            disagg_data[
                                                                                                                "value"]}
 
+        # extra completed cycle
+        extra_completed_cycles_data = EXTRA_COMPLETED_MONTH[uuid]
+        t0 = extra_completed_cycles_data["billingStartTs"]
+        t1 = extra_completed_cycles_data["billingEndTs"]
+        api_data_json = api_call(api=DISAGG_DATA_API.format(uuid=uuid, t0=t0, t1=t1), method='GET', params=PARAMS,
+                                 data="")
+
+        # by default if appId is not present in extra month, it will store default value
+        JSON_REPORT[uuid][APPLIANCE_NAME_MAPPING[appId] + "DetectedInItemizationExtraMonth"] = "appId " + str(
+            appId) + " not present in Itemization"
+        for disagg_data in api_data_json:
+            if disagg_data["appId"] == appId:
+                JSON_REPORT[uuid][APPLIANCE_NAME_MAPPING[appId] + "DetectedInItemizationExtraMonth"] = {"appId": appId,
+                                                                                                        "value":
+                                                                                                            disagg_data[
+                                                                                                                "value"]}
+
 
 # function to get survey details for a user
 def get_survey_data(uuid):
@@ -922,7 +1026,8 @@ def thread_target_function(uuid_list, start, end):
             print("solar check is completed for user:", uuid)
         except Exception as e:
             print("exception occured while fetching user solar information for user:", uuid)
-            print(e)
+            error_message = traceback.format_exc()
+            print(error_message)
 
         try:
             print("user rate information data is being fetched for user:", uuid)
@@ -930,15 +1035,17 @@ def thread_target_function(uuid_list, start, end):
             print("user rate information data fetch completed for user:", uuid)
         except Exception as e:
             print("exception occured while fetching user rate information for user:", uuid)
-            print(e)
+            error_message = traceback.format_exc()
+            print(error_message)
 
         try:
             print("user required completed billing cycle data is being fetched for user:", uuid)
-            get_completed_billing_cycles(uuid, 2)
+            get_billing_cycles_overlapping_with_calender_months(uuid)
             print("user required completed billing cycle data fetch completed for user:", uuid)
         except Exception as e:
             print("exception occured while fetching user required completed billing cycle for user:", uuid)
-            print(e)
+            error_message = traceback.format_exc()
+            print(error_message)
 
         try:
             print("checking seasons of completed cycles for uuid:", uuid)
@@ -946,25 +1053,28 @@ def thread_target_function(uuid_list, start, end):
             print("season check is completed for user:", uuid)
         except Exception as e:
             print("exception occured while checking seasons of completed cycles for uuid:", uuid)
-            print(e)
+            error_message = traceback.format_exc()
+            print(error_message)
 
         try:
             print("calculating number of days in completed cycles for uuid:", uuid)
-            get_no_of_billing_cycle_days_for_last_and_current_completed_cycles(uuid)
+            get_no_of_billing_cycle_days_for_billing_cycles(uuid)
             print("number of days in completed cycles has been calculated for uuid:", uuid)
         except Exception as e:
             print("exception occured while calculation number of days in completed cycles for uuid:", uuid)
-            print(e)
+            error_message = traceback.format_exc()
+            print(error_message)
 
         try:
             print("calculating number of days of completed cycles falling in given calender months for uuid:", uuid)
-            get_no_of_cycle_days_falling_in_calender_months_for_last_and_current_completed_cycles(uuid)
+            get_no_of_cycle_days_falling_in_calender_months_for_billing_cycles(uuid)
             print("number of days of completed cycles falling in given calender months for uuid:", uuid)
         except Exception as e:
             print(
                 "exception occured while calculating number of days of completed cycles falling in given calender months for uuid:",
                 uuid)
-            print(e)
+            error_message = traceback.format_exc()
+            print(error_message)
 
         try:
             print("user billing data is being fetched for user:", uuid)
@@ -972,7 +1082,8 @@ def thread_target_function(uuid_list, start, end):
             print("user billing data fetch completed for user:", uuid)
         except Exception as e:
             print("exception occured while fetching user billing data for user:", uuid)
-            print(e)
+            error_message = traceback.format_exc()
+            print(error_message)
 
         try:
             print("user disagg data is being fetched for user:", uuid)
@@ -980,7 +1091,8 @@ def thread_target_function(uuid_list, start, end):
             print("user disagg data fetch completed for user:", uuid)
         except Exception as e:
             print("exception occured while fetching user disagg data for user:", uuid)
-            print(e)
+            error_message = traceback.format_exc()
+            print(error_message)
 
         try:
             print("user survey data is being fetched for user:", uuid)
@@ -988,7 +1100,8 @@ def thread_target_function(uuid_list, start, end):
             print("user survey data fetch completed for user:", uuid)
         except Exception as e:
             print("exception occured while fetching user survey data for user:", uuid)
-            print(e)
+            error_message = traceback.format_exc()
+            print(error_message)
 
         print("Data fetching completed for user:", uuid)
         print("Data fetched for user:", uuid, " is:\n", JSON_REPORT[uuid])
@@ -1095,12 +1208,13 @@ def export_json_to_excelSheet(uuid_list, user_tier):
             col = 0
             # incrementing row to write data in next row
             row += 1
-            wb.save('/Users/navneetnipu/Desktop/' + user_tier + '_report.xlsx')
+            wb.save('/Users/navneetnipu/Desktop/psegUserReport/' + user_tier + '_report.xlsx')
 
     except Exception as e:
         print("exception occured while exporting data to excel for user:", uuid)
-        print(e)
-    wb.save('/Users/navneetnipu/Desktop/' + user_tier + '_report.xlsx')
+        error_message = traceback.format_exc()
+        print(error_message)
+    wb.save('/Users/navneetnipu/Desktop/psegUserReport/' + user_tier + '_report.xlsx')
 
 
 if __name__ == '__main__':
@@ -1140,7 +1254,8 @@ if __name__ == '__main__':
 
     except Exception as e:
         print("exception occured while logging data into logger")
-        print(e)
+        error_message = traceback.format_exc()
+        print(error_message)
 
     # getting tou uuid list from file
     print("getting uuid list for tou users from file ", TOU_FILE_PATH)
@@ -1226,6 +1341,7 @@ if __name__ == '__main__':
             print("log file has not been created at path:", LOG_FILE_PATH)
     except Exception as e:
         print("exception occured while reading file from directory :", LOG_FILE_PATH)
-        print(e)
+        error_message = traceback.format_exc()
+        print(error_message)
 
     print("code execution completed!")
