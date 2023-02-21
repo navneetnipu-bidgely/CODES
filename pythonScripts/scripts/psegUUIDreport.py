@@ -33,7 +33,7 @@ import logging
 DATA_SERVER_URL = "https://naapi.bidgely.com"
 
 # Access token for authentication of APIs
-ACCESS_TOKEN = "328b5551-7755-4071-92b0-3ade5e24a7cd"
+ACCESS_TOKEN = "ac6c8e66-7c35-4fca-893f-3f8ee67b3eea"
 
 # Putting payload parameters required for API call
 # can be edited if needed to add any other api parameters
@@ -362,10 +362,10 @@ def get_billing_cycles_overlapping_with_calender_months(uuid):
                                            "billingEndTs": billing_cycles_info[3]["billingEndTs"]}
 
             # adding the billing_cycles_info data to JSON_REPORT
-            JSON_REPORT[uuid]["LastMonth"] = {"billingStartTs": NY_TZ.localize(
+            JSON_REPORT[uuid]["ExtraMonth"] = {"billingStartTs": NY_TZ.localize(
                 datetime.datetime.fromtimestamp(EXTRA_COMPLETED_MONTH[uuid]["billingStartTs"])).strftime('%m%d%Y'),
-                                              "billingEndTs": NY_TZ.localize(datetime.datetime.fromtimestamp(
-                                                  EXTRA_COMPLETED_MONTH[uuid]["billingEndTs"])).strftime('%m%d%Y')}
+                                               "billingEndTs": NY_TZ.localize(datetime.datetime.fromtimestamp(
+                                                   EXTRA_COMPLETED_MONTH[uuid]["billingEndTs"])).strftime('%m%d%Y')}
 
     except Exception as e:
         print("Exception occured while fetching billing cycles for uuid:", uuid)
@@ -403,12 +403,20 @@ def get_season_of_month(start_timestamp, end_timestamp):
         month_start = get_month_day_year_number_from_timestamp(start_timestamp, "month")
         month_end = get_month_day_year_number_from_timestamp(end_timestamp, "month")
 
+        season_start = SUMMER_WINTER_MONTH_MAPPING[month_start]
+        season_end = SUMMER_WINTER_MONTH_MAPPING[month_end]
+
+        print("start_timestamp:", start_timestamp, " end_timestamp:", end_timestamp)
+        print("month_start:", month_start, " month_end:", month_end)
+
         if start_timestamp == 0 and end_timestamp == 0:
             return ""
 
-        if month_start == month_end:
-            # not qualified for shoulder month check
+        elif month_start == month_end:
             return SUMMER_WINTER_MONTH_MAPPING[month_start]
+
+        elif season_start == season_end:
+            return season_start
 
         else:
             return "SEASON_CHANGE"
@@ -496,7 +504,7 @@ def get_no_of_cycle_days_falling_in_calender_months_for_billing_cycles(uuid):
                 calender_end=LAST_COMPLETED_CALENDER_END_TIMESTAMP)
             no_of_days_for_extra_completed_cycle = {"current": current, "previous": previous}
         else:
-            no_of_days_for_extra_completed_cycle = {"current": current, "previous": previous}
+            no_of_days_for_extra_completed_cycle = {"current": 0, "previous": 0}
 
         current = 0
         previous = 0
@@ -602,6 +610,8 @@ def get_billing_data_info(uuid, PlanNumber):
             # same for cost to find the aggregated cost
         '''
 
+        print("inside if")
+
         rate_category = RATE_PLAN_TO_CATEGORY_MAPPING[int(JSON_REPORT[uuid]["RatePlanID"])]
         PlanNumber = JSON_REPORT[uuid]["PlanNumber"]
 
@@ -687,7 +697,8 @@ def get_billing_data_info(uuid, PlanNumber):
         # finding new rates data
         new_rate_plan_number = int(rates_schedule[rates_schedule_len - 1]["metaData"]["planNumber"])
         new_rate_category = RATE_PLAN_TO_CATEGORY_MAPPING[RATE_PLAN_MAPPING[new_rate_plan_number]]
-        rate_effective_timestamp = rates_schedule[rates_schedule_len - 1]["endTime"]
+
+        rate_effective_timestamp = rates_schedule[rates_schedule_len - 1]["startTime"]
 
         # finding the rate time slab from rate_effective_timestamp
         start_end_timestamp_slab = get_start_end_timeslab_for_rate_transition(rate_effective_timestamp)
@@ -698,6 +709,7 @@ def get_billing_data_info(uuid, PlanNumber):
 
         # current_month_billing_cost
         # current_month_aggregated_consumption
+
         for time_slab in start_end_timestamp_slab["current_month"]:
 
             params = PARAMS
