@@ -33,7 +33,7 @@ import logging
 DATA_SERVER_URL = "https://naapi.bidgely.com"
 
 # Access token for authentication of APIs
-ACCESS_TOKEN = "ac6c8e66-7c35-4fca-893f-3f8ee67b3eea"
+ACCESS_TOKEN = "28d7e230-8804-4b47-a8bd-f83340d40175"
 
 # Putting payload parameters required for API call
 # can be edited if needed to add any other api parameters
@@ -43,7 +43,7 @@ PARAMS = {"access_token": ACCESS_TOKEN}
 NO_OF_THREADS_TO_BE_MADE = 10
 
 # chunk size that will be used to run all threads (NO_OF_THREADS_TO_BE_MADE) on particular chunk of users
-TOU_CHUNK_SIZE = 5
+TOU_CHUNK_SIZE = 100
 NON_TOU_CHUNK_SIZE = 5
 
 # time zone of pilot
@@ -62,7 +62,7 @@ HID = 1
 DEFAULT_T0 = 0
 
 # t1:end time of data to be fetched (default is current timestamp)
-DEFAULT_T1 = 1676291576
+DEFAULT_T1 = 1678078800
 
 # locale of the pilot (depends upon pilot)
 LOCALE = "en_US"
@@ -81,10 +81,10 @@ SUMMER_WINTER_MONTH_MAPPING = {1: "WINTER", 2: "WINTER", 3: "SUMMER", 4: "SUMMER
                                7: "SHOULDER", 8: "SHOULDER", 9: "SUMMER", 10: "SUMMER", 11: "SUMMER", 12: "WINTER"}
 
 # tou file path
-TOU_FILE_PATH = "/Users/navneetnipu/Desktop/psegUserReport/TOU_UUID.txt"
+TOU_FILE_PATH = "/Users/navneetnipu/Desktop/WORK_FOLDER/psegUserReport/TOU_UUID.txt"
 
 # nontou file path
-NONTOU_FILE_PATH = "/Users/navneetnipu/Desktop/psegUserReport/NONTOU_UUID.txt"
+NONTOU_FILE_PATH = "/Users/navneetnipu/Desktop/WORK_FOLDER/psegUserReport/NONTOU_UUID.txt"
 
 # appliance name mapping
 APPLIANCE_NAME_MAPPING = {18: "EV", 4: "Heating"}
@@ -102,10 +102,10 @@ TOU_PROGRAM_ID = "43d9fa80-da8e-44c3-b08b-32e1013a5272"
 FIND_PROGRAM_ID_FROM_RATE_CATEGORY = {"tou": TOU_PROGRAM_ID, "tier": TIER_PROGRAM_ID}
 
 # last 2 completed calander months start and end timestamps (december 2022 and january 2023)
-LAST_COMPLETED_CALENDER_START_TIMESTAMP = 1669870800
-LAST_COMPLETED_CALENDER_END_TIMESTAMP = 1672545200
-CURRENT_COMPLETED_CALENDER_START_TIMESTAMP = 1672549200
-CURRENT_COMPLETED_CALENDER_END_TIMESTAMP = 1675227500
+LAST_COMPLETED_CALENDER_START_TIMESTAMP = 1672549200
+LAST_COMPLETED_CALENDER_END_TIMESTAMP = 1675227599
+CURRENT_COMPLETED_CALENDER_START_TIMESTAMP = 1675227600
+CURRENT_COMPLETED_CALENDER_END_TIMESTAMP = 1677646799
 
 # initializing CURRENT_COMPLETED_MONTH and lastCompletedMonth variables that will hold cycle data at user level
 # They will be used for timestamps when data in JSON_REPORT are changed to MMDDYYYY
@@ -121,10 +121,11 @@ formatted_datetime = current_datetime.strftime("%d%m%Y%H%M%S")
 # file path for logger
 
 # create a log file
-with open("/Users/navneetnipu/Desktop/psegUserReport/psegReportLogFile" + formatted_datetime + ".log", 'w') as file:
+with open("/Users/navneetnipu/Desktop/WORK_FOLDER/psegUserReport/psegReportLogFile" + formatted_datetime + ".log",
+          'w') as file:
     pass
 
-LOG_FILE_PATH = "/Users/navneetnipu/Desktop/psegUserReport/psegReportLogFile" + formatted_datetime + ".log"
+LOG_FILE_PATH = "/Users/navneetnipu/Desktop/WORK_FOLDER/psegUserReport/psegReportLogFile" + formatted_datetime + ".log"
 
 # Configure the logging module
 # change the level config for different log level like log,debug,warning etc.
@@ -1210,7 +1211,10 @@ def export_json_to_excelSheet(uuid_list, user_tier):
             col += 1
             for field_name in SHEET_HEADER_DATA[1:]:
                 if uuid in JSON_REPORT.keys():
-                    data = str(JSON_REPORT[uuid][field_name])
+                    if field_name in JSON_REPORT[uuid]:
+                        data = str(JSON_REPORT[uuid][field_name])
+                    else:
+                        data = ""
                 else:
                     data = ""
                 sheet.write(row, col, data)
@@ -1220,13 +1224,13 @@ def export_json_to_excelSheet(uuid_list, user_tier):
             col = 0
             # incrementing row to write data in next row
             row += 1
-            wb.save('/Users/navneetnipu/Desktop/psegUserReport/' + user_tier + '_report.xlsx')
+            wb.save('/Users/navneetnipu/Desktop/WORK_FOLDER/psegUserReport/' + user_tier + '_report.xlsx')
 
     except Exception as e:
         print("exception occured while exporting data to excel for user:", uuid)
         error_message = traceback.format_exc()
         print(error_message)
-    wb.save('/Users/navneetnipu/Desktop/psegUserReport/' + user_tier + '_report.xlsx')
+    wb.save('/Users/navneetnipu/Desktop/WORK_FOLDER/psegUserReport/' + user_tier + '_report.xlsx')
 
 
 if __name__ == '__main__':
