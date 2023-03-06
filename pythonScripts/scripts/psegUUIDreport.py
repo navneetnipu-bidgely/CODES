@@ -199,10 +199,9 @@ SHEET_HEADER_DATA = ["UUID", "SolarUser", "RatePlanID", "PlanNumber", "RatePlanS
                      "TotalDaysFallingInCalenderMonthForLastCompletedCycle", "LastMonthSeason", "CurrentMonth",
                      "TotalBillingCycleDaysForCurrentCompletedCycle",
                      "TotalDaysFallingInCalenderMonthForCurrentCompletedCycle", "CurrentMonthSeason",
-                     "EVDetectedInItemizationExtraMonth", "EVDetectedInItemizationExtraMonth",
-                     "EVDetectedInItemizationLastMonth", "EVDetectedInItemizationCurrentMonth",
-                     "HeatingDetectedInItemizationLastMonth", "HeatingDetectedInItemizationCurrentMonth",
-                     "EVansweredYESInSurvey", "HeatingAnsweredYESInSurvey",
+                     "EVDetectedInItemizationExtraMonth", "EVDetectedInItemizationLastMonth",
+                     "EVDetectedInItemizationCurrentMonth", "HeatingDetectedInItemizationLastMonth",
+                     "HeatingDetectedInItemizationCurrentMonth", "EVansweredYESInSurvey", "HeatingAnsweredYESInSurvey",
                      "TotalAggregatedEVConsumptionInCurrentCalendarMonth",
                      "TotalAggregatedEVCostInCurrentCalendarMonth", "TotalAggregatedEVConsumptionInLastCalendarMonth",
                      "TotalAggregatedEVCostInLastCalendarMonth"]
