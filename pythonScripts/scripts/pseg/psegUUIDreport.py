@@ -33,7 +33,7 @@ import logging
 DATA_SERVER_URL = "https://naapi.bidgely.com"
 
 # Access token for authentication of APIs
-ACCESS_TOKEN = "28d7e230-8804-4b47-a8bd-f83340d40175"
+ACCESS_TOKEN = "a84ab700-2f30-402b-b8f4-a9f2577eb2fc"
 
 # Putting payload parameters required for API call
 # can be edited if needed to add any other api parameters
@@ -62,7 +62,7 @@ HID = 1
 DEFAULT_T0 = 0
 
 # t1:end time of data to be fetched (default is current timestamp)
-DEFAULT_T1 = 1678078800
+DEFAULT_T1 = 1680825600
 
 # locale of the pilot (depends upon pilot)
 LOCALE = "en_US"
@@ -102,10 +102,10 @@ TOU_PROGRAM_ID = "43d9fa80-da8e-44c3-b08b-32e1013a5272"
 FIND_PROGRAM_ID_FROM_RATE_CATEGORY = {"tou": TOU_PROGRAM_ID, "tier": TIER_PROGRAM_ID}
 
 # last 2 completed calander months start and end timestamps (december 2022 and january 2023)
-LAST_COMPLETED_CALENDER_START_TIMESTAMP = 1672549200
-LAST_COMPLETED_CALENDER_END_TIMESTAMP = 1675227599
-CURRENT_COMPLETED_CALENDER_START_TIMESTAMP = 1675227600
-CURRENT_COMPLETED_CALENDER_END_TIMESTAMP = 1677646799
+LAST_COMPLETED_CALENDER_START_TIMESTAMP = 1675227600
+LAST_COMPLETED_CALENDER_END_TIMESTAMP = 1677646799
+CURRENT_COMPLETED_CALENDER_START_TIMESTAMP = 1677646799
+CURRENT_COMPLETED_CALENDER_END_TIMESTAMP = 1680307200
 
 # initializing CURRENT_COMPLETED_MONTH and lastCompletedMonth variables that will hold cycle data at user level
 # They will be used for timestamps when data in JSON_REPORT are changed to MMDDYYYY
@@ -316,6 +316,8 @@ def get_billing_cycles_overlapping_with_calender_months(uuid):
         # billing_cycles_info data structure : billing_cycles_info={1:{billingStartTs:value,billingEndTs:value},2:{billingStartTs:value,billingEndTs:value},3:{billingStartTs:value,billingEndTs:value}}
         billing_cycles_info = {}
         cycle_index = 1
+
+        print(billingStartTimestamps_list)
 
         for start_timestamp in billingStartTimestamps_list:
 
