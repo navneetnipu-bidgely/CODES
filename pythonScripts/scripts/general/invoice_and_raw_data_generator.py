@@ -16,11 +16,12 @@ def create_raw_and_invoice_data(meter_info,epoch_start,epoch_end):
     RATE=5
 
     # invoice and raw file paths
-    INVOICE_FILE_PATH="/Users/navneetnipu/Desktop/GPCSMB/test_users/INVOICE_D.txt"
-    RAW_FILE_PATH="/Users/navneetnipu/Desktop/GPCSMB/test_users/RAW_D_1800_S.txt"
+    INVOICE_FILE_PATH="/Users/navneetnipu/Desktop/INVOICE.txt"
+    RAW_FILE_PATH="/Users/navneetnipu/Desktop/GPCSMB/RAW.txt"
 
     # billing cycles
-    BC_SCHEDULES=[{"start":"2021-12-01","end":"2022-01-01"},{"start":"2022-01-01","end":"2022-02-01"},{"start":"2022-02-01","end":"2022-03-01"},{"start":"2022-03-01","end":"2022-04-01"},{"start":"2022-04-01","end":"2022-05-01"},{"start":"2022-05-01","end":"2022-06-01"},{"start":"2022-06-01","end":"2022-07-01"},{"start":"2022-07-01","end":"2022-08-01"},{"start":"2022-08-01","end":"2022-09-01"},{"start":"2022-09-01","end":"2022-10-01"},{"start":"2022-10-01","end":"2022-11-01"},{"start":"2022-11-01","end":"2022-12-01"},{"start":"2022-12-01","end":"2023-01-01"},{"start":"2023-01-01","end":"2023-02-01"},{"start":"2023-02-01","end":"2023-03-01"},{"start":"2023-03-01","end":"2023-04-01"},{"start":"2023-04-01","end":"2023-05-01"}]
+    BC_SCHEDULES = [{"start": "2023-04-01", "end": "2023-05-01"}, {"start": "2023-05-01", "end": "2023-06-01"},
+                    {"start": "2023-06-01", "end": "2023-07-01"}]
 
 
     # for data quality issue check

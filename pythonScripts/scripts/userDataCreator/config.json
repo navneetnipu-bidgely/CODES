@@ -1,0 +1,71 @@
+{
+  "user_enrollment": {
+    "users_to_be_created": 10,
+    "user_enrollment_file_path": "/Users/navneetnipu/Desktop/test_users/USERENROLL.txt",
+    "dummy_user_record": "{customer_id}|{account_id}|{premise_id}|SMB|navneetnipu@bidgely.com|navneet|nipu|52 1ST AVE E||||HAZLEHURST|GA|31539||PO BOX 1777||||HAZLEHURST|GA|31539|912-375-5494|HOME|EN|OBTAINED|0|",
+    "variable_fields_with_static_key": {
+      "customer_id":"customer_id",
+      "account_id": "account_id",
+      "premise_id": "premise_id"
+    },
+    "comment": ""
+
+  },
+  "meter_enrollment": {
+    "meter_enrollment_file_path": "/Users/navneetnipu/Desktop/test_users/METERENROLL.txt",
+    "dummy_meter_record": "{customer_id}|{account_id}|{premise_id}|{meter_id}|ELECTRIC|2014-12-31|9999-12-31||2014-12-31|0|2014-12-31|0|AMI||",
+    "variable_fields_with_static_key": {
+      "customer_id":"customer_id",
+      "account_id": "account_id",
+      "premise_id": "premise_id",
+      "meter_id": "meter_id"
+    },
+    "comment": ""
+
+  },
+  "raw_data": {
+    "raw_data_file_path": "/Users/navneetnipu/Desktop/test_users/RAW.txt",
+    "dummy_raw_data_record": "{customer_id}|{account_id}|{premise_id}|{meter_id}|{date_time}|{consumption}|0|0",
+    "variable_fields_with_static_key": {
+      "customer_id":"customer_id",
+      "account_id": "account_id",
+      "premise_id": "premise_id",
+      "meter_id": "meter_id"
+    },
+    "time_format": "%Y-%m-%d %I:%M:%S %p",
+    "raw_data_granularity_in_secs": 1800,
+    "single_row_per_month_format": false,
+    "raw_data_generation_start_timestamp": 1680307200,
+    "raw_data_generation_end_timestamp": 0,
+    "comment": ""
+
+  },
+  "billing_data": {
+    "billing_data_file_path": "/Users/navneetnipu/Desktop/test_users/BILLING.txt",
+    "dummy_billing_data_record": "{customer_id}|{account_id}|{premise_id}|{meter_id}|ELECTRIC|0|{bc_start}|{bc_end}|{bc_duration}|TOT KWH|CONSUMPTION_BASED|{consumption}|{cost}|AMI||",
+    "variable_fields_with_static_key": {
+      "customer_id":"customer_id",
+      "account_id": "account_id",
+      "premise_id": "premise_id",
+      "meter_id": "meter_id"
+    },
+    "is_billing_end_date_inclusive": true,
+    "comment": ""
+
+  },
+  "bc_schedule":{
+    "billing_cycles":[
+    {"start": "2023-04-01", "end": "2023-05-01"},{"start": "2023-05-01", "end": "2023-06-01"},
+    {"start": "2023-06-01", "end": "2023-07-01"},{"start": "2023-07-01", "end": "2023-08-01"}
+  ],
+    "comment": ""
+},
+  "user_inputs": {
+    "create_user_enrollment": true,
+    "create_meter_enrollment": true,
+    "create_raw_data": true,
+    "create_billing_data": true,
+    "default_rate": 5,
+    "comment": ""
+  }
+}

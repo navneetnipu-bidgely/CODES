@@ -1,7 +1,4 @@
-import datetime
-import random
-
-from pythonScripts.scripts.userDataCreator.invoice_and_raw_data_generator import create_raw_and_invoice_data
+from pythonScripts.scripts.general.invoice_and_raw_data_generator import create_raw_and_invoice_data
 
 
 def create_raw_and_invoice_files(meter_info,epoch_start,epoch_end):
@@ -30,23 +27,16 @@ if __name__=='__main__':
     METER_FILE_PATH="/Users/navneetnipu/Desktop/GPCSMB/test_users/METERENROLL_30users.txt"
     USERENROLL_FILE_PATH="/Users/navneetnipu/Desktop/GPCSMB/test_users/USERENROLL_30users.txt"
 
-    # epoch start and end fopr raw data generation
-    EPOCH_START = 1638297000
-    EPOCH_END = 1681886147
+    # epoch start and end for raw data generation
+    EPOCH_START = 1680307200
+    EPOCH_END = 1686729420
 
 
     user_count=0
     user_limit=30
 
-    BC_SCHEDULES = [{"start": "2021-12-01", "end": "2022-01-01"}, {"start": "2022-01-01", "end": "2022-02-01"},
-                    {"start": "2022-02-01", "end": "2022-03-01"}, {"start": "2022-03-01", "end": "2022-04-01"},
-                    {"start": "2022-04-01", "end": "2022-05-01"}, {"start": "2022-05-01", "end": "2022-06-01"},
-                    {"start": "2022-06-01", "end": "2022-07-01"}, {"start": "2022-07-01", "end": "2022-08-01"},
-                    {"start": "2022-08-01", "end": "2022-09-01"}, {"start": "2022-09-01", "end": "2022-10-01"},
-                    {"start": "2022-10-01", "end": "2022-11-01"}, {"start": "2022-11-01", "end": "2022-12-01"},
-                    {"start": "2022-12-01", "end": "2023-01-01"}, {"start": "2023-01-01", "end": "2023-02-01"},
-                    {"start": "2023-02-01", "end": "2023-03-01"}, {"start": "2023-03-01", "end": "2023-04-01"},
-                    {"start": "2023-04-01", "end": "2023-05-01"}]
+    BC_SCHEDULES = [{"start": "2023-04-01", "end": "2023-05-01"},{"start": "2023-05-01", "end": "2023-06-01"},
+                    {"start": "2023-06-01", "end": "2023-07-01"}]
 
 
 
