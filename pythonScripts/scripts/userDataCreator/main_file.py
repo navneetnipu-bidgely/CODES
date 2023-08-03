@@ -234,7 +234,7 @@ def aggregate_raw_data_on_month(user_raw_data_consumption_map):
 
 def aggregate_raw_data_on_bc(user_raw_data_consumption_map, billing_cycle_list, is_billing_end_date_inclusive):
     aggregated_data = []
-    for billing_cycle in billing_cycle_list:
+    for billing_cycle in billing_cycle_list[:-1]:
 
         bc_date_format = '%Y-%m-%d'
         bc_start_date = billing_cycle["start"]

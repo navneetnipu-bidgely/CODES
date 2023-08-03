@@ -6,7 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="9d11bb21-e937-4c7e-9afe-32b6e28525c1" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pythonScripts/scripts/general/JSON_CONFIG_COMPARATOR.py" beforeDir="false" afterPath="$PROJECT_DIR$/pythonScripts/scripts/general/JSON_CONFIG_COMPARATOR.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pythonScripts/scripts/userDataCreator/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/pythonScripts/scripts/userDataCreator/config.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pythonScripts/scripts/userDataCreator/main_file.py" beforeDir="false" afterPath="$PROJECT_DIR$/pythonScripts/scripts/userDataCreator/main_file.py" afterDir="false" />
     </list>
