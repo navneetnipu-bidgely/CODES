@@ -1,9 +1,9 @@
 {
   "user_enrollment": {
-    "users_to_be_created": 10,
-    "user_id_start": 21,
-    "user_enrollment_file_path": "/Users/navneetnipu/Desktop/test_users/USERENROLL3.txt",
-    "dummy_user_record": "{customer_id}|{account_id}|{premise_id}|SMB|navneetnipu@bidgely.com|navneet|nipu|52 1ST AVE E||||HAZLEHURST|GA|31539||PO BOX 1777||||HAZLEHURST|GA|31539|912-375-5494|HOME|EN|OBTAINED|0|",
+    "users_to_be_created": 25,
+    "user_id_start": 101,
+    "user_enrollment_file_path": "/Users/navneetnipu/Desktop/test_users/USERENROLL1.txt",
+    "dummy_user_record": "{customer_id}|{account_id}|{premise_id}|SMB-459120|bidgelyqa@bidgely.com|navneet|nipu|52 1ST AVE E||||HAZLEHURST|GA|31539||PO BOX 1777||||HAZLEHURST|GA|31539|912-375-5494|HOME|EN|OBTAINED|0|",
     "variable_fields_with_static_key": {
       "customer_id":"qa_test_customer_id",
       "account_id": "qa_test_account_id",
@@ -13,8 +13,8 @@
 
   },
   "meter_enrollment": {
-    "meter_enrollment_file_path": "/Users/navneetnipu/Desktop/test_users/METERENROLL3.txt",
-    "dummy_meter_record": "{customer_id}|{account_id}|{premise_id}|{meter_id}|ELECTRIC|2014-12-31|9999-12-31||2014-12-31|0|2014-12-31|0|AMI||",
+    "meter_enrollment_file_path": "/Users/navneetnipu/Desktop/test_users/METERENROLL1.txt",
+    "dummy_meter_record": "{customer_id}|{account_id}|{premise_id}|{meter_id}|ELECTRIC|2014-12-31|9999-12-31||2014-12-31|21|2014-12-31|0|AMI||",
     "variable_fields_with_static_key": {
       "customer_id":"qa_test_customer_id",
       "account_id": "qa_test_account_id",
@@ -25,7 +25,7 @@
 
   },
   "raw_data": {
-    "raw_data_file_path": "/Users/navneetnipu/Desktop/test_users/RAW3.txt",
+    "raw_data_file_path": "/Users/navneetnipu/Desktop/test_users/RAW1.txt",
     "dummy_raw_data_record": "{customer_id}|{account_id}|{premise_id}|{meter_id}|{date_time}|{consumption}|0|0",
     "variable_fields_with_static_key": {
       "customer_id":"qa_test_customer_id",
@@ -39,20 +39,20 @@
     "raw_data_generation_start_timestamp": 1640995200,
     "raw_data_generation_end_timestamp": 0,
     "raw_data_consumption_range_start":0 ,
-    "raw_data_consumption_range_end":15,
+    "raw_data_consumption_range_end":5,
     "comment": ""
 
   },
   "billing_data": {
-    "billing_data_file_path": "/Users/navneetnipu/Desktop/test_users/BILLING3.txt",
-    "dummy_billing_data_record": "{customer_id}|{account_id}|{premise_id}|{meter_id}|ELECTRIC|0|{bc_start}|{bc_end}|{bc_duration}|TOT KWH|CONSUMPTION_BASED|{consumption}|{cost}|AMI||",
+    "billing_data_file_path": "/Users/navneetnipu/Desktop/test_users/BILLING1.txt",
+    "dummy_billing_data_record": "{customer_id}|{account_id}|{premise_id}|{meter_id}|ELECTRIC|21|{bc_start}|{bc_end}|{bc_duration}|TOT KWH|CONSUMPTION_BASED|{consumption}|{cost}|AMI||",
     "variable_fields_with_static_key": {
       "customer_id":"qa_test_customer_id",
       "account_id": "qa_test_account_id",
       "premise_id": "qa_test_premise_id",
       "meter_id": "qa_test_meter_id"
     },
-    "is_billing_end_date_inclusive": true,
+    "is_billing_end_date_inclusive": false,
     "comment": ""
 
   },

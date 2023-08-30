@@ -107,7 +107,7 @@ def create_billing_data_for_a_user(billing_data_configs, user_raw_data_consumpti
         bc_start = data["bc_start"]
         bc_end = data["bc_end"]
 
-        bc_duration = get_bc_duration(bc_start, bc_end)
+        bc_duration = get_bc_duration(bc_start, bc_end,is_billing_end_date_inclusive)
 
         consumption = data["consumption"]
 
@@ -122,8 +122,11 @@ def create_billing_data_for_a_user(billing_data_configs, user_raw_data_consumpti
     write_list_into_file(user_billing_data_record, billing_data_file_path, file_write_mode)
 
 
-def get_bc_duration(bc_start, bc_end):
-    bc_duration = str((datetime.strptime(bc_end, "%Y-%m-%d") - datetime.strptime(bc_start, "%Y-%m-%d")).days)
+def get_bc_duration(bc_start, bc_end,is_end_date_inclusive):
+    if is_end_date_inclusive:
+        bc_duration = str((datetime.strptime(bc_end, "%Y-%m-%d") - datetime.strptime(bc_start, "%Y-%m-%d")).days)
+    else:
+        bc_duration = str((datetime.strptime(bc_end, "%Y-%m-%d") - datetime.strptime(bc_start, "%Y-%m-%d")).days-1)
     return bc_duration
 
 
@@ -303,14 +306,20 @@ def get_bc_schedules_from_api(user_inputs, bc_code, bc_range_start, bc_range_end
 
     schedules_data = api_response["payload"]
     schedules_in_date_format = []
-
+    end_epoch = 0
     for schedule in schedules_data:
+
         start_epoch = schedule["validFrom"]
+
+        if start_epoch!=end_epoch and end_epoch!=0:
+            start_epoch=end_epoch
+
         end_epoch = schedule["validTo"]
         keep_this_bc = is_bc_in_start_end_range(bc_range_start, bc_range_end, start_epoch, end_epoch)
         if keep_this_bc == True:
-            schedules_in_date_format.append({"start": get_date_time_from_epoch_timestamp(start_epoch, "%Y-%m-%d"),
-                                             "end": get_date_time_from_epoch_timestamp(end_epoch, "%Y-%m-%d")})
+            start=get_date_time_from_epoch_timestamp(start_epoch, "%Y-%m-%d")
+            end=get_date_time_from_epoch_timestamp(end_epoch, "%Y-%m-%d")
+            schedules_in_date_format.append({"start": start,"end":end })
 
     return schedules_in_date_format
 

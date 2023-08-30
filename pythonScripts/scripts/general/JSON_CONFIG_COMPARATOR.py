@@ -54,7 +54,7 @@ with open(SRC_JSON_FILE_PATH) as f:
     src_config_data_list = data["CONFIG_STD"][0]["request"]
 
 # getting dest config data from api
-api="https://gpcsmbuatapi.bidgely.com/entities/pilot/10084.MONTHLY_SUMMARY.ELECTRIC/configs/"
+api="https://gpcsmbuatapi.bidgely.com/entities/pilot/10084/configs/"
 params={"access_token":"56b02db5-b83c-4c5c-b75d-3b6eaee03438"}
 response = requests.get(url=api, params=params)
 if response.status_code == 200:
@@ -84,7 +84,7 @@ for config_data in src_config_data_list:
     config_key=config_data["payload"]["key"]
     CONFIG_TYPE_KEY_IN_PR[config_type+"|"+config_key]=1
     CONFIG_TYPES_IN_PR.append(config_type)
-    if config_type in dest_config_json_data:
+    if (config_type in dest_config_json_data) and (config_type=="email_moderation"):
         dest_config_keys_list=json.loads(dest_config_json_data[config_type])["kvs"]
         for config_key_data in dest_config_keys_list:
             if config_key==config_key_data["key"]:
