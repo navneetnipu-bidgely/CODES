@@ -3,7 +3,7 @@ import json
 import requests
 
 # json file from launchpad
-SRC_JSON_FILE_PATH="/Users/navneetnipu/Desktop/GPCSMB/src_json_file.json"
+SRC_JSON_FILE_PATH="/Users/navneetnipu/Desktop/src_json_file.json"
 
 # SRC_JSON_FILE_PATH file format
 # val={"CONFIG_STD":
@@ -39,7 +39,7 @@ SRC_JSON_FILE_PATH="/Users/navneetnipu/Desktop/GPCSMB/src_json_file.json"
 # }
 
 # json file from environment
-DEST_JSON_FILE_PATH="/Users/navneetnipu/Desktop/GPCSMB/dest_json_file.json"
+DEST_JSON_FILE_PATH="/Users/navneetnipu/Desktop/dest_json_file.json"
 
 # DEST_JSON_FILE_PATH file format
 # val={
@@ -84,7 +84,7 @@ for config_data in src_config_data_list:
     config_key=config_data["payload"]["key"]
     CONFIG_TYPE_KEY_IN_PR[config_type+"|"+config_key]=1
     CONFIG_TYPES_IN_PR.append(config_type)
-    if config_type in dest_config_json_data:
+    if (config_type in dest_config_json_data) and (config_type=="email_moderation"):
         dest_config_keys_list=json.loads(dest_config_json_data[config_type])["kvs"]
         for config_key_data in dest_config_keys_list:
             if config_key==config_key_data["key"]:
@@ -92,7 +92,7 @@ for config_data in src_config_data_list:
                 FINAL_CONFIG_DATA.append(config_data)
                 break
     else:
-        with open('/Users/navneetnipu/Desktop/GPCSMB/extra_config_in_launchpad_pr.txt', 'a') as f:
+        with open('/Users/navneetnipu/Desktop/extra_config_in_launchpad_pr.txt', 'a') as f:
             # Write the JSON data to the file
             f.write(config_type+" , "+config_key+"\n")
 
@@ -106,7 +106,7 @@ FINAL_CONFIG_JSON_DATA={"CONFIG_STD":[
 ]
 }
 
-with open('/Users/navneetnipu/Desktop/GPCSMB/final_config_json_file.json', 'w') as f:
+with open('/Users/navneetnipu/Desktop/final_config_json_file.json', 'w') as f:
     # Write the JSON data to the file
     json.dump(FINAL_CONFIG_JSON_DATA, f)
 
@@ -123,7 +123,7 @@ for config_type in dest_config_json_data:
         if config_type in CONFIG_TYPES_IN_PR_SET :
             if key not in CONFIG_TYPE_KEY_IN_PR:
                 MISSING_CONFIGS_DATA_JSON.append(key)
-                with open('/Users/navneetnipu/Desktop/GPCSMB/configs_missing_in_launchpad_pr.txt', 'a') as f:
+                with open('/Users/navneetnipu/Desktop/configs_missing_in_launchpad_pr.txt', 'a') as f:
                     f.write(key+"\n")
 
 
