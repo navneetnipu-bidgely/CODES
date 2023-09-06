@@ -1,8 +1,8 @@
 {
   "user_enrollment": {
-    "users_to_be_created": 30,
-    "user_id_start": 1,
-    "user_enrollment_file_path": "/Users/navneetnipu/Desktop/test_users/USERENROLL3.txt",
+    "users_to_be_created": 1,
+    "user_id_start": 31,
+    "user_enrollment_file_path": "/Users/navneetnipu/Desktop/test_users/USERENROLL.txt",
     "dummy_user_record": "{customer_id}|{account_id}|{premise_id}|RES|navneetnipu@bidgely.com|navneet|nipu|910 NE 11th Ct||||Battle Ground|WA|98661|||910 NE 11th Ct|Battle Ground WA||||986041234|5034671234|||||{data_stream_id}|GAS|2017-05-10|2025-05-10|R02|||||NSM|",
     "variable_fields_with_static_key": {
       "customer_id":"shc_test_customer_id",
@@ -14,7 +14,7 @@
 
   },
   "billing_data": {
-    "billing_data_file_path": "/Users/navneetnipu/Desktop/test_users/BILLING3.txt",
+    "billing_data_file_path": "/Users/navneetnipu/Desktop/test_users/BILLING.txt",
     "dummy_billing_data_record": "{customer_id}|{account_id}|{premise_id}|{data_stream_id}|GAS||{bc_start}|{bc_end}|{bc_duration}|THERMS|CONSUMPTION_BASED|{consumption}|{cost}|NSM|",
     "variable_fields_with_static_key": {
       "customer_id":"shc_test_customer_id",
@@ -32,7 +32,7 @@
     "comment": ""
 },
   "user_inputs": {
-    "create_user_enrollment": true,
+    "create_user_enrollment": false,
     "create_billing_data": true,
     "default_rate": 5,
     "pilot_id": 10097,

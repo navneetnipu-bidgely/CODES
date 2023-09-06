@@ -113,13 +113,13 @@ if __name__=='__main__':
 
     config_file_path = get_absolute_file_path_from_relative_path("nwn_config.json")
     configs = get_configs_from_config_file(config_file_path)
+    user_configs = configs["user_enrollment"]
 
     need_to_create_users = configs["user_inputs"]["create_user_enrollment"]
-    need_to_create_billing_data_for_user = configs["user_inputs"]["create_user_enrollment"]
+    need_to_create_billing_data_for_user = configs["user_inputs"]["create_billing_data"]
 
     if need_to_create_users:
         print("creating user enrollment records...")
-        user_configs = configs["user_enrollment"]
         create_user_enrollment_record(user_configs)
         print("created user enrollment records!")
 

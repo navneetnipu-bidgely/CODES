@@ -5,9 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9d11bb21-e937-4c7e-9afe-32b6e28525c1" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/pythonScripts/scripts/nwn/create_dummy_user_data.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pythonScripts/scripts/nwn/nwn_config.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pythonScripts/scripts/nwn/create_dummy_user_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/pythonScripts/scripts/nwn/create_dummy_user_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pythonScripts/scripts/nwn/nwn_config.json" beforeDir="false" afterPath="$PROJECT_DIR$/pythonScripts/scripts/nwn/nwn_config.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
