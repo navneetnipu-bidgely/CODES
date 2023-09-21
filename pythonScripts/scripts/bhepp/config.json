@@ -1,0 +1,66 @@
+{
+  "user_enrollment": {
+    "users_to_be_created": 10,
+    "user_id_start": 1,
+    "user_enrollment_file_path": "/Users/navneetnipu/Desktop/USERENROLL.txt",
+    "dummy_user_record": "{account_id}|{customer_id}|{premise_id}|RES|bidgelyqa+ATU_pporres_057518273@bidgely.com|PPOR|Test|1430 SW BRIDGE ST||||GRANTS PASS|OR|15551||1430 SW BRIDGE ST||||GRANTS PASS|OR|98335|5825614500||EN|obtained|false|{data_stream_id}|ELECTRIC|2019-07-08|||2021-03-08|222||FALSE|AMI|||||",
+    "variable_fields_with_static_key": {
+      "customer_id":"uat_test_customer_id",
+      "account_id": "uat_test_account_id",
+      "premise_id": "uat_test_premise_id",
+      "data_stream_id": "uat_test_meter_id"
+    },
+    "comment": ""
+
+  },
+  "raw_data": {
+    "raw_data_file_path": "/Users/navneetnipu/Desktop/RAW.txt",
+    "dummy_raw_data_record": "{account_id}|{customer_id}|{premise_id}|{data_stream_id}|{date_time}|{consumption}|0|0",
+    "variable_fields_with_static_key": {
+      "customer_id":"uat_test_customer_id",
+      "account_id": "uat_test_account_id",
+      "premise_id": "uat_test_premise_id",
+      "data_stream_id": "uat_test_meter_id"
+    },
+    "time_format": "%Y-%m-%d %H:%M:%S.%f",
+    "raw_data_granularity_in_secs": 900,
+    "single_row_per_month_format": false,
+    "raw_data_generation_start_timestamp": 1640995200,
+    "raw_data_generation_end_timestamp": 0,
+    "raw_data_consumption_range_start":0 ,
+    "raw_data_consumption_range_end":7,
+    "comment": ""
+
+  },
+  "billing_data": {
+    "billing_data_file_path": "/Users/navneetnipu/Desktop/INVOICE.txt",
+    "dummy_billing_data_record": "{account_id}|{customer_id}|{premise_id}|{data_stream_id}|ELECTRIC||{bc_start}|{bc_end}|{bc_duration}|ENERGY CHARGE|CONSUMPTION_BASED|{consumption}|{cost}|AMI|0",
+    "variable_fields_with_static_key": {
+      "customer_id":"uat_test_customer_id",
+      "account_id": "uat_test_account_id",
+      "premise_id": "uat_test_premise_id",
+      "data_stream_id": "uat_test_meter_id"
+    },
+    "is_billing_end_date_inclusive": true,
+    "comment": ""
+
+  },
+  "bc_schedule":{
+    "bc_code": -1,
+    "billing_cycles":[
+    {"start": "2022-01-01", "end": "2022-02-01"},{"start": "2022-02-01", "end": "2022-03-01"},{"start": "2022-03-01", "end": "2022-04-01"},{"start": "2022-04-01", "end": "2022-05-01"},{"start": "2022-05-01", "end": "2022-06-01"},{"start": "2022-06-01", "end": "2022-07-01"},{"start": "2022-07-01", "end": "2022-08-01"},{"start": "2022-08-01", "end": "2022-09-01"},{"start": "2022-09-01", "end": "2022-10-01"},{"start": "2022-10-01", "end": "2022-11-01"},{"start": "2022-11-01", "end": "2022-12-01"},{"start": "2022-12-01", "end": "2023-01-01"},{"start": "2023-01-01", "end": "2023-02-01"},{"start": "2023-02-01", "end": "2023-03-01"},{"start": "2023-03-01", "end": "2023-04-01"},{"start": "2023-04-01", "end": "2023-05-01"},{"start": "2023-05-01", "end": "2023-06-01"},{"start": "2023-06-01", "end": "2023-07-01"},{"start": "2023-07-01", "end": "2023-08-01"},{"start": "2023-08-01", "end": "2023-09-01"},{"start": "2023-09-01", "end": "2023-10-01"}
+  ],
+    "comment": ""
+},
+  "user_inputs": {
+    "create_user_enrollment": true,
+    "create_meter_enrollment": false,
+    "create_raw_data": true,
+    "create_billing_data": true,
+    "default_rate": 5,
+    "pilot_id": 10089,
+    "data_server_url": "https://bheppuatapi.bidgely.com",
+    "access_token": "56b02db5-b83c-4c5c-b75d-3b6eaee03438",
+    "comment": ""
+  }
+}
