@@ -5,10 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9d11bb21-e937-4c7e-9afe-32b6e28525c1" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/pythonScripts/scripts/bhepp/config.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pythonScripts/scripts/bhepp/main_file.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/CODES.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/CODES.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pythonScripts/scripts/general/JSON_CONFIG_COMPARATOR.py" beforeDir="false" afterPath="$PROJECT_DIR$/pythonScripts/scripts/general/JSON_CONFIG_COMPARATOR.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pythonScripts/scripts/userDataCreator/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/pythonScripts/scripts/userDataCreator/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pythonScripts/scripts/userDataCreator/main_file.py" beforeDir="false" afterPath="$PROJECT_DIR$/pythonScripts/scripts/userDataCreator/main_file.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,7 +39,7 @@
   &quot;keyToString&quot;: {
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/navneetnipu/Documents/GitHub/CODES/pythonScripts/scripts/reco_model_tester&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/navneetnipu/Documents/GitHub/CODES/pythonScripts/scripts/bhepp&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;preferences.editor&quot;
   },
   &quot;keyToStringList&quot;: {
@@ -51,11 +52,11 @@
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/pythonScripts/scripts/bhepp" />
       <recent name="$PROJECT_DIR$/pythonScripts/scripts/reco_model_tester" />
       <recent name="$PROJECT_DIR$/pythonScripts/scripts/reco_model_tester/tests" />
       <recent name="$PROJECT_DIR$/pythonScripts/scripts/userDataCreator" />
       <recent name="$PROJECT_DIR$/pythonScripts/scripts/user_data_creation/main/API" />
-      <recent name="$PROJECT_DIR$/pythonScripts/scripts/user_data_creation/main/constants" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/pythonScripts/scripts/general" />
@@ -65,7 +66,7 @@
       <recent name="$PROJECT_DIR$/pythonScripts/scripts/user_data_creation/main" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.main_file">
+  <component name="RunManager" selected="Python.main_file (1)">
     <configuration name="JSON_CONFIG_COMPARATOR" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="CODES" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -87,7 +88,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="create_dummy_user_data" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="CODES" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -95,11 +96,32 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/pythonScripts/scripts/user_data_creation/main" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/pythonScripts/scripts/nwn" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/pythonScripts/scripts/user_data_creation/main/main.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/pythonScripts/scripts/nwn/create_dummy_user_data.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="main_file (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="CODES" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/pythonScripts/scripts/bhepp" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/pythonScripts/scripts/bhepp/main_file.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -150,34 +172,13 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="userDataCreator" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="CODES" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/pythonScripts/scripts/userDataCreator" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/pythonScripts/scripts/general/userDataCreator.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.main_file (1)" />
+        <item itemvalue="Python.create_dummy_user_data" />
         <item itemvalue="Python.main_file" />
         <item itemvalue="Python.JSON_CONFIG_COMPARATOR" />
         <item itemvalue="Python.unit_tests" />
-        <item itemvalue="Python.main" />
-        <item itemvalue="Python.userDataCreator" />
       </list>
     </recent_temporary>
   </component>
